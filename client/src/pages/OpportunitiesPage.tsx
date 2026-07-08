@@ -213,7 +213,7 @@ export default function OpportunitiesPage() {
               {filtered.map((item) => (
                 <tr
                   key={item.id}
-                  className={`align-top transition ${selectedRowId === item.id ? "bg-sky-50" : "hover:bg-slate-50"}`}
+                  className={`align-top transition ${selectedRowId === item.id ? "selected-row" : "hover:bg-slate-50"}`}
                   onClick={() => setSelectedRowId(item.id)}
                   onFocusCapture={() => setSelectedRowId(item.id)}
                 >

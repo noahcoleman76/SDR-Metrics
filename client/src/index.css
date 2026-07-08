@@ -101,6 +101,27 @@ select {
   background: linear-gradient(90deg, var(--accent), transparent);
 }
 
+.selected-row {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-soft) 88%, var(--surface) 12%), color-mix(in srgb, var(--accent-soft) 55%, var(--surface) 45%)) !important;
+}
+
+:root[data-theme="dark"] .selected-row {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 30%, var(--surface) 70%), color-mix(in srgb, var(--accent) 16%, var(--surface) 84%)) !important;
+}
+
+.selected-row input,
+.selected-row select,
+.selected-row button {
+  color: var(--text-main) !important;
+}
+
+.selected-row input,
+.selected-row select {
+  background-color: color-mix(in srgb, var(--surface) 78%, transparent) !important;
+}
+
 .bg-slate-50,
 .bg-slate-100 {
   background-color: var(--surface-soft) !important;
