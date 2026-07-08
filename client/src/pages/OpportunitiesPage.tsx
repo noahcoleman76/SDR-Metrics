@@ -35,7 +35,7 @@ export default function OpportunitiesPage() {
   const [message, setMessage] = useState("");
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const tableRef = useRef<HTMLDivElement | null>(null);
-  const uniqueItems = useMemo(() => uniqueOpportunities(items), [items]);
+  const uniqueItems = useMemo(() => sortOpportunitiesByCreatedDate(uniqueOpportunities(items)), [items]);
 
   useEffect(() => {
     function clearSelection(event: MouseEvent) {
@@ -355,5 +355,14 @@ function uniqueOpportunities(items: Opportunity[]) {
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
+  });
+}
+
+function sortOpportunitiesByCreatedDate(items: Opportunity[]) {
+  return [...items].sort((a, b) => {
+    const aDate = a.createdDate ? new Date(a.createdDate).getTime() : 0;
+    const bDate = b.createdDate ? new Date(b.createdDate).getTime() : 0;
+    if (aDate !== bDate) return bDate - aDate;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 }

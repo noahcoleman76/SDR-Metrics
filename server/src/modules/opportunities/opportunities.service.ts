@@ -14,7 +14,7 @@ type OpportunityInput = {
 };
 
 export function list(userId: string) {
-  return prisma.opportunity.findMany({ where: { userId }, orderBy: [{ createdAt: "desc" }] });
+  return prisma.opportunity.findMany({ where: { userId }, orderBy: [{ createdDate: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }] });
 }
 
 export async function create(userId: string, data: OpportunityInput) {

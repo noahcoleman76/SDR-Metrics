@@ -25,6 +25,7 @@ export async function update(userId: string, id: string, data: Partial<Stage0Inp
 
 export async function moveToOpportunity(userId: string, id: string) {
   const record = await assertOwns(userId, id);
+  if (!record.createdDate) throw new ApiError(400, "Created date is required before converting to Stage 1");
   return prisma.$transaction(async (tx) => {
     const opportunity = await tx.opportunity.create({
       data: {

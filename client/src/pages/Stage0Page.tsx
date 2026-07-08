@@ -128,9 +128,18 @@ export default function Stage0Page() {
   }
 
   async function move(id: string) {
-    await api("/stage0/" + id + "/move", { method: "POST" });
-    setItems((current) => current.filter((item) => item.id !== id));
-    setMessage("Moved to Opportunities");
+    const record = items.find((item) => item.id === id);
+    if (!record?.createdDate) {
+      setMessage("Created date is required before converting to Stage 1");
+      return;
+    }
+    try {
+      await api("/stage0/" + id + "/move", { method: "POST" });
+      setItems((current) => current.filter((item) => item.id !== id));
+      setMessage("Moved to Opportunities");
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Could not convert opportunity");
+    }
   }
 
   async function remove() {
@@ -208,9 +217,15 @@ export default function Stage0Page() {
                 </td>
                 <td className="whitespace-nowrap px-3 py-3">
                   <div className="flex items-center justify-end gap-2">
-                    <Button className="h-8 px-2 text-xs" onClick={() => void move(item.id)} title="Convert to Stage 1" type="button">
+                    <button
+                      className="focus-ring rounded-md px-1.5 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-sky-600 disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={!item.createdDate}
+                      onClick={() => void move(item.id)}
+                      title={item.createdDate ? "Convert to Stage 1" : "Created date is required before converting"}
+                      type="button"
+                    >
                       Convert
-                    </Button>
+                    </button>
                     <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button>
                   </div>
                 </td>
