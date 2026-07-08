@@ -5,7 +5,7 @@ import { optionalDate, optionalString, requiredName } from "../../utils/validati
 import { routeParam } from "../../utils/params.js";
 import * as service from "./opportunities.service.js";
 
-const baseSchema = z.object({
+const createSchema = z.object({
   accountName: requiredName,
   opportunityNumber: optionalString,
   link: optionalString,
@@ -16,14 +16,23 @@ const baseSchema = z.object({
   inIcm: z.nativeEnum(IcmStatus).default("PENDING")
 });
 
-const updateSchema = baseSchema.partial();
+const updateSchema = z.object({
+  accountName: requiredName.optional(),
+  opportunityNumber: optionalString.optional(),
+  link: optionalString.optional(),
+  createdDate: optionalDate.optional(),
+  approvedDate: optionalDate.optional(),
+  accountExecutive: optionalString.optional(),
+  status: z.nativeEnum(OpportunityStatus).optional(),
+  inIcm: z.nativeEnum(IcmStatus).optional()
+});
 
 export async function list(req: Request, res: Response) {
   res.json({ opportunities: await service.list(req.user!.id) });
 }
 
 export async function create(req: Request, res: Response) {
-  res.status(201).json({ opportunity: await service.create(req.user!.id, baseSchema.parse(req.body)) });
+  res.status(201).json({ opportunity: await service.create(req.user!.id, createSchema.parse(req.body)) });
 }
 
 export async function update(req: Request, res: Response) {
