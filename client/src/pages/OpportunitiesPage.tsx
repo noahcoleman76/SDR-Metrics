@@ -56,7 +56,7 @@ export default function OpportunitiesPage() {
       return (Object.keys(filters) as OpportunityFilterKey[]).every((key) => {
         const selected = filters[key];
         return selected.length === 0 || selected.includes(opportunityFilterValue(item, key));
-      }) && (period === "all" || inCurrentPeriod(item.approvedDate, period));
+      }) && (period === "all" || !item.approvedDate || inCurrentPeriod(item.approvedDate, period));
     });
   }, [filters, period, uniqueItems]);
 

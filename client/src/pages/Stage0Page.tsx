@@ -156,7 +156,7 @@ export default function Stage0Page() {
       {loading ? <p className="text-sm text-slate-500">Loading Stage 0 records...</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <div ref={tableRef} className="max-h-[calc(100vh-20rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-[1630px] w-full table-fixed text-left text-sm">
+        <table className="min-w-[1570px] w-full table-fixed text-left text-sm">
           <colgroup>
             <col className="w-[240px]" />
             <col className="w-[170px]" />
@@ -164,7 +164,7 @@ export default function Stage0Page() {
             <col className="w-[160px]" />
             <col className="w-[220px]" />
             <col className="w-[360px]" />
-            <col className="w-[180px]" />
+            <col className="w-[120px]" />
           </colgroup>
           <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
@@ -209,7 +209,7 @@ export default function Stage0Page() {
                 <td className="whitespace-nowrap px-3 py-3">
                   <div className="flex items-center justify-end gap-2">
                     <Button className="h-8 px-2 text-xs" onClick={() => void move(item.id)} title="Convert to Stage 1" type="button">
-                      Convert to Stage 1
+                      Convert
                     </Button>
                     <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button>
                   </div>
