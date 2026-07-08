@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -10,6 +10,7 @@ import { api, body } from "../services/api";
 import type { IcmStatus, Opportunity, OpportunityStatus } from "../types/models";
 import { formatDisplayDate, inCurrentPeriod, toDateInput, type Period } from "../utils/dates";
 import { icmLabels, opportunityStatusLabels } from "../utils/labels";
+import { externalHref } from "../utils/links";
 
 const statuses: OpportunityStatus[] = ["STAGE_0", "STAGE_1_PENDING", "CLEAN", "DUPLICATE"];
 const icmStatuses: IcmStatus[] = ["PENDING", "YES", "NO"];
@@ -102,7 +103,12 @@ export default function OpportunitiesPage() {
                 <tr key={item.id} className="align-top">
                   <td className="px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} /></td>
                   <td className="px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Opportunity>)} /></td>
-                  <td className="px-2 py-2"><InlineField value={item.link ?? ""} onSave={(v) => update(item.id, { link: v || null } as Partial<Opportunity>)} /></td>
+                  <td className="px-2 py-2">
+                    <div className="flex items-center gap-2">
+                      <InlineField value={item.link ?? ""} onSave={(v) => update(item.id, { link: v || null } as Partial<Opportunity>)} />
+                      {item.link ? <a className="shrink-0 text-slate-400 hover:text-sky-600" href={externalHref(item.link)} target="_blank" rel="noreferrer" title="Open link"><ExternalLink size={16} /></a> : null}
+                    </div>
+                  </td>
                   <td className="px-2 py-2"><DateEdit value={item.createdDate} onSave={(v) => update(item.id, { createdDate: v } as Partial<Opportunity>)} /></td>
                   <td className="px-2 py-2"><DateEdit value={item.approvedDate} onSave={(v) => update(item.id, { approvedDate: v } as Partial<Opportunity>)} /></td>
                   <td className="px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Opportunity>)} /></td>

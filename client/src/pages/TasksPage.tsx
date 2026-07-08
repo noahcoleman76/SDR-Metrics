@@ -9,6 +9,7 @@ import { InlineField } from "../components/InlineField";
 import { PageHeader } from "../components/PageHeader";
 import { api, body } from "../services/api";
 import type { Task, TaskCategory } from "../types/models";
+import { externalHref } from "../utils/links";
 import { taskCategoryLabels } from "../utils/labels";
 import { useCollection } from "../hooks/useCollection";
 
@@ -112,7 +113,7 @@ export default function TasksPage() {
                         <InlineField value={task.name} required onSave={(name) => updateTask(task.id, { name } as Partial<Task>)} />
                       </div>
                       <div className="flex items-center justify-end gap-2">
-                        {task.link ? <a className="text-slate-400 hover:text-sky-600" href={task.link} target="_blank" rel="noreferrer" title="Open link"><ExternalLink size={16} /></a> : null}
+                        {task.link ? <a className="text-slate-400 hover:text-sky-600" href={externalHref(task.link)} target="_blank" rel="noreferrer" title="Open link"><ExternalLink size={16} /></a> : null}
                         <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(task.id)} title="Delete"><Trash2 size={16} /></button>
                       </div>
                     </div>

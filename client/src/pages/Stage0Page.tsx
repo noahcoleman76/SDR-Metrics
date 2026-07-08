@@ -1,4 +1,4 @@
-import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -9,6 +9,7 @@ import { useCollection } from "../hooks/useCollection";
 import { api, body } from "../services/api";
 import type { Stage0Record } from "../types/models";
 import { formatDisplayDate, toDateInput } from "../utils/dates";
+import { externalHref } from "../utils/links";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", accountExecutive: "", nextStep: "" };
 
@@ -76,7 +77,12 @@ export default function Stage0Page() {
               <tr key={item.id} className="align-top">
                 <td className="px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Stage0Record>)} /></td>
                 <td className="px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Stage0Record>)} /></td>
-                <td className="px-2 py-2"><InlineField value={item.link ?? ""} onSave={(v) => update(item.id, { link: v || null } as Partial<Stage0Record>)} /></td>
+                <td className="px-2 py-2">
+                  <div className="flex items-center gap-2">
+                    <InlineField value={item.link ?? ""} onSave={(v) => update(item.id, { link: v || null } as Partial<Stage0Record>)} />
+                    {item.link ? <a className="shrink-0 text-slate-400 hover:text-sky-600" href={externalHref(item.link)} target="_blank" rel="noreferrer" title="Open link"><ExternalLink size={16} /></a> : null}
+                  </div>
+                </td>
                 <td className="px-2 py-2"><DateEdit value={item.createdDate} onSave={(value) => update(item.id, { createdDate: value } as Partial<Stage0Record>)} /></td>
                 <td className="px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Stage0Record>)} /></td>
                 <td className="px-2 py-2"><InlineField value={item.nextStep ?? ""} onSave={(v) => update(item.id, { nextStep: v || null } as Partial<Stage0Record>)} /></td>

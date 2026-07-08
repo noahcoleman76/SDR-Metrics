@@ -10,6 +10,7 @@ import { PageHeader } from "../components/PageHeader";
 import { useCollection } from "../hooks/useCollection";
 import { api, body } from "../services/api";
 import type { Account, AccountSection } from "../types/models";
+import { externalHref } from "../utils/links";
 import { accountSectionLabels } from "../utils/labels";
 
 const sections: AccountSection[] = ["LEAD_MILLING", "PRIORITY_ACCOUNTS"];
@@ -93,7 +94,7 @@ export default function AccountsPage() {
                         <InlineField value={account.name} required onSave={(value) => updateAccount(account.id, { name: value } as Partial<Account>)} />
                       </div>
                       <div className="flex items-center justify-end gap-2">
-                        {account.link ? <a className="text-slate-400 hover:text-sky-600" href={account.link} target="_blank" rel="noreferrer" title="Open"><ExternalLink size={16} /></a> : null}
+                        {account.link ? <a className="text-slate-400 hover:text-sky-600" href={externalHref(account.link)} target="_blank" rel="noreferrer" title="Open"><ExternalLink size={16} /></a> : null}
                         <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(account.id)} title="Delete"><Trash2 size={16} /></button>
                       </div>
                     </div>
