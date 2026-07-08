@@ -3,10 +3,12 @@ import { Navigate } from "react-router-dom";
 import { Button } from "../components/Button";
 import { PasswordField } from "../components/PasswordField";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import logoUrl from "../assets/sdr-logo.png";
 
 export default function AuthPage() {
   const { user, login, register } = useAuth();
+  const { mode: themeMode, toggleMode } = useTheme();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,10 +39,12 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+    <div className="theme-shell flex min-h-screen items-center justify-center p-4">
       <form onSubmit={submit} className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center gap-3">
-          <img src={logoUrl} alt="SDR Metrics" className="h-24 w-24 object-contain" />
+          <button className="logo-backdrop focus-ring flex h-24 w-24 items-center justify-center rounded-xl border border-slate-200" onClick={toggleMode} type="button" title={`Switch to ${themeMode === "light" ? "dark" : "light"} mode`}>
+            <img src={logoUrl} alt="SDR Metrics" className="h-20 w-20 object-contain" />
+          </button>
           <h1 className="text-xl font-semibold text-slate-950">SDR Metrics</h1>
         </div>
         <p className="mt-1 text-sm text-slate-500">{mode === "login" ? "Sign in to your workspace." : "Create your account."}</p>
