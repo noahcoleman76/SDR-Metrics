@@ -290,29 +290,23 @@ function NextStepField({ expanded, value, onExpand, onSave }: { expanded: boolea
     }
   }
 
-  if (!expanded) {
-    return (
-      <button className="focus-ring min-h-8 w-full rounded-md px-2 text-left text-sm whitespace-nowrap text-slate-700 hover:bg-slate-50" onClick={onExpand} type="button">
-        {value || "Add next step"}
-      </button>
-    );
-  }
-
   return (
     <div
       data-next-step-editor="true"
+      onPointerDown={(event) => event.stopPropagation()}
       onMouseDown={(event) => event.stopPropagation()}
       onClick={(event) => event.stopPropagation()}
     >
       <textarea
-        className="focus-ring min-h-32 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
+        className={`focus-ring w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm leading-6 text-slate-700 hover:border-slate-200 ${expanded ? "min-h-32 resize-y bg-slate-50 px-3 py-2" : "h-8 resize-none overflow-hidden whitespace-nowrap"}`}
         value={draft}
         placeholder="Add next step notes"
         onChange={(event) => setDraft(event.target.value)}
+        onFocus={onExpand}
         onBlur={() => void save()}
-        autoFocus
+        rows={expanded ? 5 : 1}
       />
-      <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div>
+      {expanded ? <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div> : null}
     </div>
   );
 }
