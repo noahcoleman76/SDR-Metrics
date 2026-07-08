@@ -3,11 +3,12 @@ import { useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InlineField } from "../components/InlineField";
+import { Modal } from "../components/Modal";
 import { PageHeader } from "../components/PageHeader";
 import { useCollection } from "../hooks/useCollection";
 import { api, body } from "../services/api";
 import type { Stage0Record } from "../types/models";
-import { toDateInput } from "../utils/dates";
+import { formatDisplayDate, toDateInput } from "../utils/dates";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", accountExecutive: "", nextStep: "" };
 
@@ -16,6 +17,7 @@ export default function Stage0Page() {
   const [form, setForm] = useState(emptyForm);
   const [filter, setFilter] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
 
   const filtered = useMemo(() => {
@@ -33,6 +35,7 @@ export default function Stage0Page() {
       setItems((current) => [data.record, ...current]);
       setForm(emptyForm);
       setMessage("");
+      setModalOpen(false);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not add Stage 0 record");
     }
@@ -58,16 +61,7 @@ export default function Stage0Page() {
 
   return (
     <>
-      <PageHeader title="Stage 0" description="Early-stage opportunities before manual promotion." />
-      <div className="mb-4 grid gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-3 xl:grid-cols-7">
-        <Input placeholder="Account name" value={form.accountName} onChange={(v) => setForm({ ...form, accountName: v })} />
-        <Input placeholder="Opp #" value={form.opportunityNumber} onChange={(v) => setForm({ ...form, opportunityNumber: v })} />
-        <Input placeholder="Link" value={form.link} onChange={(v) => setForm({ ...form, link: v })} />
-        <Input type="date" value={form.createdDate} onChange={(v) => setForm({ ...form, createdDate: v })} />
-        <Input placeholder="AE" value={form.accountExecutive} onChange={(v) => setForm({ ...form, accountExecutive: v })} />
-        <Input placeholder="Next step" value={form.nextStep} onChange={(v) => setForm({ ...form, nextStep: v })} />
-        <Button variant="primary" icon={<Plus size={16} />} onClick={add}>Add</Button>
-      </div>
+      <PageHeader title="Stage 0" description="Early-stage opportunities before manual promotion." actions={<Button variant="primary" icon={<Plus size={16} />} onClick={() => setModalOpen(true)}>Add opportunity</Button>} />
       {message ? <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</p> : null}
       <input className="focus-ring mb-3 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm" value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Filter by account, AE, next step, or created date" />
       {loading ? <p className="text-sm text-slate-500">Loading Stage 0 records...</p> : null}
@@ -83,7 +77,7 @@ export default function Stage0Page() {
                 <td className="px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Stage0Record>)} /></td>
                 <td className="px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Stage0Record>)} /></td>
                 <td className="px-2 py-2"><InlineField value={item.link ?? ""} onSave={(v) => update(item.id, { link: v || null } as Partial<Stage0Record>)} /></td>
-                <td className="px-2 py-2"><input className="focus-ring h-8 rounded-md border border-slate-200 px-2 text-sm" type="date" value={toDateInput(item.createdDate)} onChange={(event) => void update(item.id, { createdDate: event.target.value || null } as Partial<Stage0Record>)} /></td>
+                <td className="px-2 py-2"><DateEdit value={item.createdDate} onSave={(value) => update(item.id, { createdDate: value } as Partial<Stage0Record>)} /></td>
                 <td className="px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Stage0Record>)} /></td>
                 <td className="px-2 py-2"><InlineField value={item.nextStep ?? ""} onSave={(v) => update(item.id, { nextStep: v || null } as Partial<Stage0Record>)} /></td>
                 <td className="px-3 py-3">
@@ -97,6 +91,20 @@ export default function Stage0Page() {
           </tbody>
         </table>
       </div>
+      <Modal open={modalOpen} title="Add Stage 0 opportunity" onClose={() => setModalOpen(false)}>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Input placeholder="Account name" value={form.accountName} onChange={(v) => setForm({ ...form, accountName: v })} />
+          <Input placeholder="Opportunity number" value={form.opportunityNumber} onChange={(v) => setForm({ ...form, opportunityNumber: v })} />
+          <Input placeholder="Link" value={form.link} onChange={(v) => setForm({ ...form, link: v })} />
+          <Input type="date" value={form.createdDate} onChange={(v) => setForm({ ...form, createdDate: v })} />
+          <Input placeholder="Account Executive" value={form.accountExecutive} onChange={(v) => setForm({ ...form, accountExecutive: v })} />
+          <Input placeholder="Next step" value={form.nextStep} onChange={(v) => setForm({ ...form, nextStep: v })} />
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button onClick={() => setModalOpen(false)}>Cancel</Button>
+          <Button variant="primary" icon={<Plus size={16} />} onClick={add}>Add opportunity</Button>
+        </div>
+      </Modal>
       <ConfirmDialog open={Boolean(deleteId)} title="Delete Stage 0 record" description="This permanently deletes the Stage 0 record." onCancel={() => setDeleteId(null)} onConfirm={() => void remove()} />
     </>
   );
@@ -104,4 +112,12 @@ export default function Stage0Page() {
 
 function Input({ value, onChange, placeholder, type = "text" }: { value: string; onChange: (value: string) => void; placeholder?: string; type?: string }) {
   return <input className="focus-ring h-10 rounded-lg border border-slate-200 px-3 text-sm" value={value} type={type} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />;
+}
+
+function DateEdit({ value, onSave }: { value: string | null; onSave: (value: string | null) => void }) {
+  const [editing, setEditing] = useState(false);
+  if (editing) {
+    return <input className="focus-ring h-8 rounded-md border border-transparent bg-transparent px-2 text-sm hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
+  }
+  return <button className="focus-ring min-h-8 rounded-md px-2 text-left text-sm text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
 }
