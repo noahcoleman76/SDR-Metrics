@@ -2,6 +2,7 @@ import { BarChart3, BriefcaseBusiness, CheckSquare, CircleDollarSign, Flag, LogO
 import { NavLink, Outlet } from "react-router-dom";
 import clsx from "clsx";
 import { useAuth } from "../context/AuthContext";
+import logoUrl from "../assets/sdr-logo.png";
 
 const nav = [
   { to: "/tasks", label: "Tasks", icon: CheckSquare },
@@ -16,7 +17,9 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-20 border-r border-slate-200 bg-white/95 px-3 py-4 md:flex md:flex-col">
-        <div className="mb-6 flex h-10 items-center justify-center rounded-xl bg-slate-950 text-sm font-semibold text-white">SDR</div>
+        <div className="mb-6 flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+          <img src={logoUrl} alt="SDR Metrics" className="h-8 w-8 object-contain" />
+        </div>
         <nav className="flex flex-1 flex-col gap-2">
           {nav.map((item) => (
             <NavLink
@@ -36,7 +39,8 @@ export function AppLayout() {
         </button>
       </aside>
       <div className="border-b border-slate-200 bg-white px-3 py-2 md:hidden">
-        <div className="flex gap-1 overflow-x-auto">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <img src={logoUrl} alt="SDR Metrics" className="h-9 w-9 shrink-0 object-contain" />
           {nav.map((item) => (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => clsx("flex min-w-11 items-center justify-center rounded-lg px-3 py-2", isActive ? "bg-sky-50 text-sky-700" : "text-slate-500")}>
               <item.icon size={19} />
