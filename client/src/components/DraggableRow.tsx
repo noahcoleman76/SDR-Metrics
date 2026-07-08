@@ -12,7 +12,14 @@ export function DraggableRow({ id, children }: { id: string; children: ReactNode
     setDropNodeRef(node);
   };
   return (
-    <div ref={setRefs} style={{ transform: CSS.Translate.toString(transform) }} className={`rounded-lg border bg-white p-2 shadow-sm ${isDragging ? "opacity-60" : ""} ${isOver ? "border-sky-300 ring-2 ring-sky-100" : "border-slate-200"}`}>
+    <div
+      ref={setRefs}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        zIndex: isDragging ? 50 : undefined
+      }}
+      className={`relative rounded-lg border bg-white p-2 shadow-sm ${isDragging ? "opacity-95 shadow-xl ring-2 ring-sky-200" : ""} ${isOver ? "border-sky-300 ring-2 ring-sky-100" : "border-slate-200"}`}
+    >
       <div className="flex items-center gap-2">
         <button className="cursor-grab text-slate-300 hover:text-slate-500" {...listeners} {...attributes} type="button">
           <GripVertical size={16} />

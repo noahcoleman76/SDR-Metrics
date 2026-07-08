@@ -38,11 +38,23 @@ export default function AccountsPage() {
 
   async function onDragEnd(event: DragEndEvent) {
     const account = accounts.find((item) => item.id === event.active.id);
-    const nextSection = event.over?.id as AccountSection | undefined;
-    if (!account || !nextSection || !sections.includes(nextSection)) return;
-    const moved = accounts.map((item) => (item.id === account.id ? { ...item, section: nextSection } : item));
-    const ordered = moved.map((item) => ({ id: item.id, section: item.section, position: moved.filter((candidate) => candidate.section === item.section).findIndex((candidate) => candidate.id === item.id) }));
-    setItems(moved);
+    const overId = event.over?.id as string | undefined;
+    if (!account || !overId || account.id === overId) return;
+
+    const overAccount = accounts.find((item) => item.id === overId);
+    const destinationSection = overAccount?.section ?? (sections.includes(overId as AccountSection) ? (overId as AccountSection) : undefined);
+    if (!destinationSection) return;
+
+    const nextAccounts = accounts.filter((item) => item.id !== account.id);
+    const movedAccount = { ...account, section: destinationSection };
+    const targetIndex = overAccount ? nextAccounts.findIndex((item) => item.id === overAccount.id) : -1;
+    const insertIndex = targetIndex >= 0 ? targetIndex : nextAccounts.filter((item) => item.section === destinationSection).length;
+    const destinationIndices = nextAccounts.reduce<number[]>((indices, item, index) => (item.section === destinationSection ? [...indices, index] : indices), []);
+    const absoluteIndex = targetIndex >= 0 ? targetIndex : destinationIndices[insertIndex] ?? nextAccounts.length;
+    nextAccounts.splice(absoluteIndex, 0, movedAccount);
+
+    const ordered = nextAccounts.map((item) => ({ id: item.id, section: item.section, position: nextAccounts.filter((candidate) => candidate.section === item.section).findIndex((candidate) => candidate.id === item.id) }));
+    setItems(nextAccounts);
     const data = await api<{ accounts: Account[] }>("/accounts/reorder", { method: "PATCH", ...body({ items: ordered }) });
     setItems(data.accounts);
   }
