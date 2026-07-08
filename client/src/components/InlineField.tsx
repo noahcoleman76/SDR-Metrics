@@ -37,9 +37,9 @@ export function InlineField({ value, placeholder, className, required, onSave }:
   }
 
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <input
-        className={clsx("focus-ring w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm hover:border-slate-200", className)}
+        className={clsx("focus-ring w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm whitespace-nowrap hover:border-slate-200", className)}
         value={draft}
         placeholder={placeholder}
         onChange={(event) => setDraft(event.target.value)}

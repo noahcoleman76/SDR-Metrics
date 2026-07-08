@@ -1,5 +1,5 @@
 import { ExternalLink, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -34,6 +34,12 @@ export default function OpportunitiesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
   const uniqueItems = useMemo(() => uniqueOpportunities(items), [items]);
+
+  useEffect(() => {
+    if (!message) return;
+    const timeout = window.setTimeout(() => setMessage(""), 4000);
+    return () => window.clearTimeout(timeout);
+  }, [message]);
 
   const filtered = useMemo(() => {
     return uniqueItems.filter((item) => {
@@ -168,7 +174,18 @@ export default function OpportunitiesPage() {
         {loading ? <p className="text-sm text-slate-500">Loading opportunities...</p> : null}
         {error ? <p className="text-sm text-rose-600">{error}</p> : null}
         <div className="max-h-[calc(100vh-22rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-[1050px] w-full text-left text-sm">
+          <table className="min-w-[1500px] w-full table-fixed text-left text-sm">
+            <colgroup>
+              <col className="w-[240px]" />
+              <col className="w-[170px]" />
+              <col className="w-[300px]" />
+              <col className="w-[160px]" />
+              <col className="w-[160px]" />
+              <col className="w-[220px]" />
+              <col className="w-[180px]" />
+              <col className="w-[140px]" />
+              <col className="w-[64px]" />
+            </colgroup>
             <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-3 py-3 font-medium"><ColumnFilter label="Account" options={filterOptions.accountName} selected={filters.accountName} onChange={(values) => setColumnFilter("accountName", values)} /></th>
@@ -185,20 +202,20 @@ export default function OpportunitiesPage() {
             <tbody className="divide-y divide-slate-100">
               {filtered.map((item) => (
                 <tr key={item.id} className="align-top">
-                  <td className="px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} /></td>
-                  <td className="px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Opportunity>)} /></td>
-                  <td className="px-2 py-2">
+                  <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2">
                     <div className="flex items-center gap-2">
                       <InlineField value={item.link ?? ""} onSave={(v) => update(item.id, { link: v || null } as Partial<Opportunity>)} />
                       {item.link ? <a className="shrink-0 text-slate-400 hover:text-sky-600" href={externalHref(item.link)} target="_blank" rel="noreferrer" title="Open link"><ExternalLink size={16} /></a> : null}
                     </div>
                   </td>
-                  <td className="px-2 py-2"><DateEdit value={item.createdDate} onSave={(v) => update(item.id, { createdDate: v } as Partial<Opportunity>)} /></td>
-                  <td className="px-2 py-2"><DateEdit value={item.approvedDate} onSave={(v) => update(item.id, { approvedDate: v } as Partial<Opportunity>)} /></td>
-                  <td className="px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Opportunity>)} /></td>
-                  <td className="px-2 py-2"><Select value={item.status} values={statuses} labels={opportunityStatusLabels} onChange={(v) => update(item.id, { status: v as OpportunityStatus } as Partial<Opportunity>)} /></td>
-                  <td className="px-2 py-2"><Select value={item.inIcm} values={icmStatuses} labels={icmLabels} onChange={(v) => update(item.id, { inIcm: v as IcmStatus } as Partial<Opportunity>)} /></td>
-                  <td className="px-3 py-3"><button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button></td>
+                  <td className="whitespace-nowrap px-2 py-2"><DateEdit value={item.createdDate} onSave={(v) => update(item.id, { createdDate: v } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2"><DateEdit value={item.approvedDate} onSave={(v) => update(item.id, { approvedDate: v } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2"><Select value={item.status} values={statuses} labels={opportunityStatusLabels} onChange={(v) => update(item.id, { status: v as OpportunityStatus } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2"><Select value={item.inIcm} values={icmStatuses} labels={icmLabels} onChange={(v) => update(item.id, { inIcm: v as IcmStatus } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-3 py-3"><button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button></td>
                 </tr>
               ))}
             </tbody>
@@ -237,13 +254,13 @@ function Input({ value, onChange, placeholder, type = "text" }: { value: string;
 function DateEdit({ value, onSave }: { value: string | null; onSave: (value: string | null) => void }) {
   const [editing, setEditing] = useState(false);
   if (editing) {
-    return <input className="focus-ring h-8 rounded-md border border-transparent bg-transparent px-2 text-sm hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
+    return <input className="focus-ring h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm whitespace-nowrap hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
   }
-  return <button className="focus-ring min-h-8 rounded-md px-2 text-left text-sm text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
+  return <button className="focus-ring min-h-8 w-full rounded-md px-2 text-left text-sm whitespace-nowrap text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
 }
 
 function Select<T extends string>({ value, values, labels, onChange }: { value: T; values: T[]; labels: Record<T, string>; onChange: (value: T) => void }) {
-  return <select className="focus-ring h-8 rounded-md border border-transparent bg-transparent px-2 text-sm hover:bg-slate-50" value={value} onChange={(event) => onChange(event.target.value as T)}>{values.map((v) => <option key={v} value={v}>{labels[v]}</option>)}</select>;
+  return <select className="focus-ring h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm whitespace-nowrap hover:bg-slate-50" value={value} onChange={(event) => onChange(event.target.value as T)}>{values.map((v) => <option key={v} value={v}>{labels[v]}</option>)}</select>;
 }
 
 function PeriodToggle({ value, onChange }: { value: OpportunityViewPeriod; onChange: (period: OpportunityViewPeriod) => void }) {
