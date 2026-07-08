@@ -1,4 +1,4 @@
-import { BarChart3, BriefcaseBusiness, CheckSquare, CircleDollarSign, Flag, LogOut } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, CheckSquare, CircleDollarSign, Flag, LogOut, Settings } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import clsx from "clsx";
 import { useAuth } from "../context/AuthContext";
@@ -9,7 +9,8 @@ const nav = [
   { to: "/accounts", label: "Accounts", icon: BriefcaseBusiness },
   { to: "/opportunities", label: "Opportunities", icon: CircleDollarSign },
   { to: "/stage-0", label: "Stage 0", icon: Flag },
-  { to: "/arr-actuals", label: "ARR Actuals", icon: BarChart3 }
+  { to: "/arr-actuals", label: "ARR Actuals", icon: BarChart3 },
+  { to: "/settings", label: "Settings", icon: Settings }
 ];
 
 export function AppLayout() {

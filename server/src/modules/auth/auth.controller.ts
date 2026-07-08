@@ -8,6 +8,11 @@ const credentialsSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters")
 });
 
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(8, "Current password must be at least 8 characters"),
+  newPassword: z.string().min(8, "New password must be at least 8 characters")
+});
+
 export async function register(req: Request, res: Response) {
   const body = credentialsSchema.parse(req.body);
   const user = await authService.register(body.email, body.password);
@@ -28,5 +33,11 @@ export async function me(req: Request, res: Response) {
 
 export async function logout(_req: Request, res: Response) {
   res.clearCookie(authCookieName, { path: "/" });
+  res.status(204).send();
+}
+
+export async function changePassword(req: Request, res: Response) {
+  const body = changePasswordSchema.parse(req.body);
+  await authService.changePassword(req.user!.id, body.currentPassword, body.newPassword);
   res.status(204).send();
 }

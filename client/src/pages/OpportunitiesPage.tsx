@@ -1,6 +1,7 @@
 import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../components/Button";
+import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InlineField } from "../components/InlineField";
 import { Modal } from "../components/Modal";
@@ -14,22 +15,47 @@ import { externalHref } from "../utils/links";
 
 const statuses: OpportunityStatus[] = ["STAGE_0", "STAGE_1_PENDING", "CLEAN", "DUPLICATE"];
 const icmStatuses: IcmStatus[] = ["PENDING", "YES", "NO"];
+const blankValue = "__blank__";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", approvedDate: "", accountExecutive: "", status: "STAGE_1_PENDING" as OpportunityStatus, inIcm: "PENDING" as IcmStatus };
+type OpportunityFilterKey = "accountName" | "opportunityNumber" | "link" | "createdDate" | "approvedDate" | "accountExecutive" | "status" | "inIcm";
+type OpportunityFilters = Record<OpportunityFilterKey, string[]>;
+const emptyFilters: OpportunityFilters = { accountName: [], opportunityNumber: [], link: [], createdDate: [], approvedDate: [], accountExecutive: [], status: [], inIcm: [] };
 
 export default function OpportunitiesPage() {
   const { items, setItems, loading, error } = useCollection<Opportunity>("/opportunities", "opportunities");
   const [form, setForm] = useState(emptyForm);
-  const [filter, setFilter] = useState("");
+  const [filters, setFilters] = useState<OpportunityFilters>(emptyFilters);
   const [period, setPeriod] = useState<Period>("month");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
 
   const filtered = useMemo(() => {
-    const q = filter.toLowerCase();
-    return items.filter((item) => [item.accountName, item.accountExecutive, opportunityStatusLabels[item.status], icmLabels[item.inIcm], toDateInput(item.createdDate), toDateInput(item.approvedDate)].some((value) => (value ?? "").toLowerCase().includes(q)));
-  }, [filter, items]);
+    return items.filter((item) => {
+      return (Object.keys(filters) as OpportunityFilterKey[]).every((key) => {
+        const selected = filters[key];
+        return selected.length === 0 || selected.includes(opportunityFilterValue(item, key));
+      });
+    });
+  }, [filters, items]);
+
+  const filterOptions = useMemo(() => {
+    return {
+      accountName: optionsFrom(items, (item) => textFilterValue(item.accountName)),
+      opportunityNumber: optionsFrom(items, (item) => textFilterValue(item.opportunityNumber)),
+      link: optionsFrom(items, (item) => textFilterValue(item.link)),
+      createdDate: optionsFrom(items, (item) => dateFilterValue(item.createdDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
+      approvedDate: optionsFrom(items, (item) => dateFilterValue(item.approvedDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
+      accountExecutive: optionsFrom(items, (item) => textFilterValue(item.accountExecutive)),
+      status: optionsFrom(items, (item) => item.status, (value) => opportunityStatusLabels[value as OpportunityStatus]),
+      inIcm: optionsFrom(items, (item) => item.inIcm, (value) => icmLabels[value as IcmStatus])
+    } satisfies Record<OpportunityFilterKey, FilterOption[]>;
+  }, [items]);
+
+  function setColumnFilter(key: OpportunityFilterKey, values: string[]) {
+    setFilters((current) => ({ ...current, [key]: values }));
+  }
 
   const metrics = useMemo(() => {
     const approvedThisMonth = items.filter((item) => inCurrentPeriod(item.approvedDate, "month"));
@@ -90,13 +116,22 @@ export default function OpportunitiesPage() {
       </div>
       <section className="min-w-0">
         {message ? <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</p> : null}
-        <input className="focus-ring mb-3 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm" value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Filter by account, AE, status, ICM, or dates" />
         {loading ? <p className="text-sm text-slate-500">Loading opportunities...</p> : null}
         {error ? <p className="text-sm text-rose-600">{error}</p> : null}
         <div className="max-h-[calc(100vh-22rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-[1050px] w-full text-left text-sm">
             <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>{["Account", "Opp #", "Link", "Created", "Approved", "AE", "Status", "ICM", ""].map((h) => <th key={h} className="px-3 py-3 font-medium">{h}</th>)}</tr>
+              <tr>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="Account" options={filterOptions.accountName} selected={filters.accountName} onChange={(values) => setColumnFilter("accountName", values)} /></th>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="Opp #" options={filterOptions.opportunityNumber} selected={filters.opportunityNumber} onChange={(values) => setColumnFilter("opportunityNumber", values)} /></th>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="Link" options={filterOptions.link} selected={filters.link} onChange={(values) => setColumnFilter("link", values)} /></th>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="Created" options={filterOptions.createdDate} selected={filters.createdDate} onChange={(values) => setColumnFilter("createdDate", values)} /></th>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="Approved" options={filterOptions.approvedDate} selected={filters.approvedDate} onChange={(values) => setColumnFilter("approvedDate", values)} /></th>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="AE" options={filterOptions.accountExecutive} selected={filters.accountExecutive} onChange={(values) => setColumnFilter("accountExecutive", values)} /></th>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="Status" options={filterOptions.status} selected={filters.status} onChange={(values) => setColumnFilter("status", values)} /></th>
+                <th className="px-3 py-3 font-medium"><ColumnFilter label="ICM" options={filterOptions.inIcm} selected={filters.inIcm} onChange={(values) => setColumnFilter("inIcm", values)} /></th>
+                <th className="px-3 py-3 font-medium"></th>
+              </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.filter((item) => period ? inCurrentPeriod(item.approvedDate, period) || !item.approvedDate : true).map((item) => (
@@ -164,4 +199,27 @@ function Select<T extends string>({ value, values, labels, onChange }: { value: 
 
 function PeriodToggle({ value, onChange }: { value: Period; onChange: (period: Period) => void }) {
   return <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">{(["month", "quarter", "year"] as Period[]).map((p) => <button key={p} className={`rounded-md px-3 py-1.5 text-sm capitalize ${value === p ? "bg-slate-950 text-white" : "text-slate-500"}`} onClick={() => onChange(p)}>{p}</button>)}</div>;
+}
+
+function opportunityFilterValue(item: Opportunity, key: OpportunityFilterKey) {
+  if (key === "createdDate") return dateFilterValue(item.createdDate);
+  if (key === "approvedDate") return dateFilterValue(item.approvedDate);
+  if (key === "status") return item.status;
+  if (key === "inIcm") return item.inIcm;
+  return textFilterValue(item[key]);
+}
+
+function textFilterValue(value?: string | null) {
+  const trimmed = value?.trim();
+  return trimmed || blankValue;
+}
+
+function dateFilterValue(value?: string | null) {
+  return toDateInput(value) || blankValue;
+}
+
+function optionsFrom<T>(items: T[], getValue: (item: T) => string, getLabel: (value: string) => string = (value) => (value === blankValue ? "Blank" : value)) {
+  return Array.from(new Set(items.map(getValue)))
+    .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
+    .map((value) => ({ value, label: getLabel(value) }));
 }

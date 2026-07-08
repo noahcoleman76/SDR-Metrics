@@ -20,3 +20,12 @@ export async function login(email: string, password: string) {
   if (!valid) throw new ApiError(401, "Invalid email or password");
   return { id: user.id, email: user.email };
 }
+
+export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new ApiError(404, "User not found");
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) throw new ApiError(401, "Current password is incorrect");
+  const passwordHash = await bcrypt.hash(newPassword, rounds);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+}

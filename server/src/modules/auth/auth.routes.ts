@@ -8,4 +8,5 @@ export const authRouter = Router();
 authRouter.post("/register", asyncHandler(controller.register));
 authRouter.post("/login", asyncHandler(controller.login));
 authRouter.get("/me", requireAuth, asyncHandler(controller.me));
+authRouter.post("/change-password", requireAuth, asyncHandler(controller.changePassword));
 authRouter.post("/logout", requireAuth, asyncHandler(controller.logout));

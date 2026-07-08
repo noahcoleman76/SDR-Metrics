@@ -1,6 +1,7 @@
 import { ArrowRight, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../components/Button";
+import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InlineField } from "../components/InlineField";
 import { Modal } from "../components/Modal";
@@ -12,19 +13,42 @@ import { formatDisplayDate, toDateInput } from "../utils/dates";
 import { externalHref } from "../utils/links";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", accountExecutive: "", nextStep: "" };
+const blankValue = "__blank__";
+type Stage0FilterKey = "accountName" | "opportunityNumber" | "link" | "createdDate" | "accountExecutive" | "nextStep";
+type Stage0Filters = Record<Stage0FilterKey, string[]>;
+const emptyFilters: Stage0Filters = { accountName: [], opportunityNumber: [], link: [], createdDate: [], accountExecutive: [], nextStep: [] };
 
 export default function Stage0Page() {
   const { items, setItems, loading, error } = useCollection<Stage0Record>("/stage0", "records");
   const [form, setForm] = useState(emptyForm);
-  const [filter, setFilter] = useState("");
+  const [filters, setFilters] = useState<Stage0Filters>(emptyFilters);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
 
   const filtered = useMemo(() => {
-    const q = filter.toLowerCase();
-    return items.filter((item) => [item.accountName, item.accountExecutive, item.nextStep, toDateInput(item.createdDate)].some((value) => (value ?? "").toLowerCase().includes(q)));
-  }, [filter, items]);
+    return items.filter((item) => {
+      return (Object.keys(filters) as Stage0FilterKey[]).every((key) => {
+        const selected = filters[key];
+        return selected.length === 0 || selected.includes(stage0FilterValue(item, key));
+      });
+    });
+  }, [filters, items]);
+
+  const filterOptions = useMemo(() => {
+    return {
+      accountName: optionsFrom(items, (item) => textFilterValue(item.accountName)),
+      opportunityNumber: optionsFrom(items, (item) => textFilterValue(item.opportunityNumber)),
+      link: optionsFrom(items, (item) => textFilterValue(item.link)),
+      createdDate: optionsFrom(items, (item) => dateFilterValue(item.createdDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
+      accountExecutive: optionsFrom(items, (item) => textFilterValue(item.accountExecutive)),
+      nextStep: optionsFrom(items, (item) => textFilterValue(item.nextStep))
+    } satisfies Record<Stage0FilterKey, FilterOption[]>;
+  }, [items]);
+
+  function setColumnFilter(key: Stage0FilterKey, values: string[]) {
+    setFilters((current) => ({ ...current, [key]: values }));
+  }
 
   async function add() {
     if (!form.accountName.trim()) {
@@ -64,13 +88,20 @@ export default function Stage0Page() {
     <>
       <PageHeader title="Stage 0" description="Early-stage opportunities before manual promotion." actions={<Button variant="primary" icon={<Plus size={16} />} onClick={() => setModalOpen(true)}>Add opportunity</Button>} />
       {message ? <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</p> : null}
-      <input className="focus-ring mb-3 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm" value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Filter by account, AE, next step, or created date" />
       {loading ? <p className="text-sm text-slate-500">Loading Stage 0 records...</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <div className="max-h-[calc(100vh-20rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-[900px] w-full text-left text-sm">
           <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500">
-            <tr>{["Account", "Opp #", "Link", "Created", "AE", "Next step", ""].map((h) => <th key={h} className="px-3 py-3 font-medium">{h}</th>)}</tr>
+            <tr>
+              <th className="px-3 py-3 font-medium"><ColumnFilter label="Account" options={filterOptions.accountName} selected={filters.accountName} onChange={(values) => setColumnFilter("accountName", values)} /></th>
+              <th className="px-3 py-3 font-medium"><ColumnFilter label="Opp #" options={filterOptions.opportunityNumber} selected={filters.opportunityNumber} onChange={(values) => setColumnFilter("opportunityNumber", values)} /></th>
+              <th className="px-3 py-3 font-medium"><ColumnFilter label="Link" options={filterOptions.link} selected={filters.link} onChange={(values) => setColumnFilter("link", values)} /></th>
+              <th className="px-3 py-3 font-medium"><ColumnFilter label="Created" options={filterOptions.createdDate} selected={filters.createdDate} onChange={(values) => setColumnFilter("createdDate", values)} /></th>
+              <th className="px-3 py-3 font-medium"><ColumnFilter label="AE" options={filterOptions.accountExecutive} selected={filters.accountExecutive} onChange={(values) => setColumnFilter("accountExecutive", values)} /></th>
+              <th className="px-3 py-3 font-medium"><ColumnFilter label="Next step" options={filterOptions.nextStep} selected={filters.nextStep} onChange={(values) => setColumnFilter("nextStep", values)} /></th>
+              <th className="px-3 py-3 font-medium"></th>
+            </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filtered.map((item) => (
@@ -126,4 +157,24 @@ function DateEdit({ value, onSave }: { value: string | null; onSave: (value: str
     return <input className="focus-ring h-8 rounded-md border border-transparent bg-transparent px-2 text-sm hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
   }
   return <button className="focus-ring min-h-8 rounded-md px-2 text-left text-sm text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
+}
+
+function stage0FilterValue(item: Stage0Record, key: Stage0FilterKey) {
+  if (key === "createdDate") return dateFilterValue(item.createdDate);
+  return textFilterValue(item[key]);
+}
+
+function textFilterValue(value?: string | null) {
+  const trimmed = value?.trim();
+  return trimmed || blankValue;
+}
+
+function dateFilterValue(value?: string | null) {
+  return toDateInput(value) || blankValue;
+}
+
+function optionsFrom<T>(items: T[], getValue: (item: T) => string, getLabel: (value: string) => string = (value) => (value === blankValue ? "Blank" : value)) {
+  return Array.from(new Set(items.map(getValue)))
+    .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
+    .map((value) => ({ value, label: getLabel(value) }));
 }
