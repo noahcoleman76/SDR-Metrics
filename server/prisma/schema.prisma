@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskCategory {
+  DAILY
+  WEEKLY
+  AD_HOC
+}
+
+enum AccountSection {
+  LEAD_MILLING
+  PRIORITY_ACCOUNTS
+}
+
+enum OpportunityStatus {
+  STAGE_0
+  STAGE_1_PENDING
+  CLEAN
+  DUPLICATE
+}
+
+enum IcmStatus {
+  PENDING
+  YES
+  NO
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  passwordHash   String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  tasks          Task[]
+  accounts       Account[]
+  opportunities  Opportunity[]
+  stage0Records  Stage0Record[]
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  userId      String
+  name        String
+  category    TaskCategory
+  position    Int          @default(0)
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category, position])
+}
+
+model Account {
+  id        String         @id @default(cuid())
+  userId    String
+  name      String
+  link      String?
+  section   AccountSection
+  position  Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, section, position])
+}
+
+model Opportunity {
+  id                    String            @id @default(cuid())
+  userId                String
+  accountName           String
+  opportunityNumber     String?
+  link                  String?
+  createdDate           DateTime?
+  approvedDate          DateTime?
+  accountExecutive      String?
+  status                OpportunityStatus @default(STAGE_1_PENDING)
+  inIcm                 IcmStatus         @default(PENDING)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, approvedDate])
+  @@index([userId, opportunityNumber])
+}
+
+model Stage0Record {
+  id                    String   @id @default(cuid())
+  userId                String
+  accountName           String
+  opportunityNumber     String?
+  link                  String?
+  createdDate           DateTime?
+  accountExecutive      String?
+  nextStep              String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, opportunityNumber])
+}
