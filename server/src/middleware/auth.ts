@@ -25,10 +25,11 @@ export function signSession(user: AuthUser) {
 }
 
 export function sessionCookieOptions() {
+  const isProduction = env.NODE_ENV === "production";
   return {
     httpOnly: true,
-    sameSite: "lax" as const,
-    secure: env.COOKIE_SECURE,
+    sameSite: isProduction ? ("none" as const) : ("lax" as const),
+    secure: isProduction ? true : env.COOKIE_SECURE,
     maxAge: ninetyDays,
     path: "/"
   };
