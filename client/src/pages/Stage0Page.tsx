@@ -40,8 +40,8 @@ export default function Stage0Page() {
         setExpandedNextStepId(null);
       }
     }
-    document.addEventListener("mousedown", clearSelection);
-    return () => document.removeEventListener("mousedown", clearSelection);
+    document.addEventListener("click", clearSelection);
+    return () => document.removeEventListener("click", clearSelection);
   }, []);
 
   useEffect(() => {
