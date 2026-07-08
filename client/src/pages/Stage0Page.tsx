@@ -297,7 +297,9 @@ function NextStepField({ expanded, value, onExpand, onSave }: { expanded: boolea
         value={draft}
         placeholder="Add next step notes"
         onChange={(event) => setDraft(event.target.value)}
-        onBlur={() => void save()}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) void save();
+        }}
         autoFocus
       />
       <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div>

@@ -242,11 +242,17 @@ export default function OpportunitiesPage() {
           <Input placeholder="Account name" value={form.accountName} onChange={(v) => setForm({ ...form, accountName: v })} />
           <Input placeholder="Opportunity number" value={form.opportunityNumber} onChange={(v) => setForm({ ...form, opportunityNumber: v })} />
           <Input placeholder="Link" value={form.link} onChange={(v) => setForm({ ...form, link: v })} />
-          <Input type="date" value={form.createdDate} onChange={(v) => setForm({ ...form, createdDate: v })} />
-          <Input type="date" value={form.approvedDate} onChange={(v) => setForm({ ...form, approvedDate: v })} />
+          <LabeledDateInput label="Created date" value={form.createdDate} onChange={(v) => setForm({ ...form, createdDate: v })} />
+          <LabeledDateInput label="Approved date" value={form.approvedDate} onChange={(v) => setForm({ ...form, approvedDate: v })} />
           <Input placeholder="Account Executive" value={form.accountExecutive} onChange={(v) => setForm({ ...form, accountExecutive: v })} />
-          <select className="focus-ring h-10 rounded-lg border border-slate-200 px-2 text-sm" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as OpportunityStatus })}>{statuses.map((s) => <option key={s} value={s}>{opportunityStatusLabels[s]}</option>)}</select>
-          <select className="focus-ring h-10 rounded-lg border border-slate-200 px-2 text-sm" value={form.inIcm} onChange={(event) => setForm({ ...form, inIcm: event.target.value as IcmStatus })}>{icmStatuses.map((s) => <option key={s} value={s}>{icmLabels[s]}</option>)}</select>
+          <label className="block text-xs font-medium text-slate-500">
+            Status
+            <select className="focus-ring mt-1 h-10 w-full rounded-lg border border-slate-200 px-2 text-sm" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as OpportunityStatus })}>{statuses.map((s) => <option key={s} value={s}>{opportunityStatusLabels[s]}</option>)}</select>
+          </label>
+          <label className="block text-xs font-medium text-slate-500">
+            In ICM
+            <select className="focus-ring mt-1 h-10 w-full rounded-lg border border-slate-200 px-2 text-sm" value={form.inIcm} onChange={(event) => setForm({ ...form, inIcm: event.target.value as IcmStatus })}>{icmStatuses.map((s) => <option key={s} value={s}>{icmLabels[s]}</option>)}</select>
+          </label>
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button onClick={() => setModalOpen(false)}>Cancel</Button>
@@ -264,6 +270,15 @@ function Metric({ label, value }: { label: string; value: number }) {
 
 function Input({ value, onChange, placeholder, type = "text" }: { value: string; onChange: (value: string) => void; placeholder?: string; type?: string }) {
   return <input className="focus-ring h-10 rounded-lg border border-slate-200 px-3 text-sm" value={value} type={type} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />;
+}
+
+function LabeledDateInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="block text-xs font-medium text-slate-500">
+      {label}
+      <input className="focus-ring mt-1 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm" value={value} type="date" onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
 }
 
 function DateEdit({ value, onSave }: { value: string | null; onSave: (value: string | null) => void }) {
