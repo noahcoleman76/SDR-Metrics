@@ -16,10 +16,25 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   });
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new ApiError(response.status, data.message ?? "Request failed");
+  if (!response.ok) throw new ApiError(response.status, formatApiError(data));
   return data as T;
 }
 
 export function body(data: unknown): RequestInit {
   return { body: JSON.stringify(data) };
+}
+
+function formatApiError(data: unknown) {
+  if (!data || typeof data !== "object") return "Request failed";
+  const message = "message" in data && typeof data.message === "string" ? data.message : "Request failed";
+  const issues = "issues" in data && Array.isArray(data.issues) ? data.issues : [];
+  const issueMessages = issues
+    .map((issue) => {
+      if (!issue || typeof issue !== "object") return "";
+      const path = "path" in issue && Array.isArray(issue.path) ? issue.path.join(".") : "";
+      const detail = "message" in issue && typeof issue.message === "string" ? issue.message : "";
+      return [path, detail].filter(Boolean).join(": ");
+    })
+    .filter(Boolean);
+  return issueMessages.length ? `${message}: ${issueMessages.join("; ")}` : message;
 }

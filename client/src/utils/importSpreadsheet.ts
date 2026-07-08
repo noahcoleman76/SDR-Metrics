@@ -40,7 +40,19 @@ function normalizeCell(value: unknown) {
 function normalizeDateValue(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return "";
+  if (["n/a", "na", "none", "null", "-"].includes(trimmed.toLowerCase())) return "";
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(trimmed)) {
+    const parsed = parse(trimmed, "yyyy-M-d", new Date());
+    if (isValid(parsed)) return format(parsed, "yyyy-MM-dd");
+  }
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const serial = Number(trimmed);
+    const parsed = XLSX.SSF.parse_date_code(serial);
+    if (parsed?.y && parsed?.m && parsed?.d) {
+      return `${parsed.y.toString().padStart(4, "0")}-${parsed.m.toString().padStart(2, "0")}-${parsed.d.toString().padStart(2, "0")}`;
+    }
+  }
 
   const formats = ["M/d/yyyy", "MM/dd/yyyy", "M-d-yyyy", "MM-dd-yyyy", "M/d/yy", "MM/dd/yy", "MMM d, yyyy", "MMMM d, yyyy"];
   for (const candidateFormat of formats) {
@@ -49,6 +61,6 @@ function normalizeDateValue(value: string) {
   }
 
   const nativeDate = new Date(trimmed);
-  if (isValid(nativeDate)) return format(nativeDate, "yyyy-MM-dd");
+  if (isValid(nativeDate) && nativeDate.getFullYear() >= 1900 && nativeDate.getFullYear() <= 2200) return format(nativeDate, "yyyy-MM-dd");
   return trimmed;
 }
