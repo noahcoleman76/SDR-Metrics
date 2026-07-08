@@ -10,6 +10,7 @@ export type Task = {
   userId: string;
   name: string;
   details: string | null;
+  link: string | null;
   category: TaskCategory;
   position: number;
   completedAt: string | null;

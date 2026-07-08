@@ -32,7 +32,7 @@ export default function AuthPage() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
       <form onSubmit={submit} className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center gap-3">
-          <img src={logoUrl} alt="SDR Metrics" className="h-12 w-12 object-contain" />
+          <img src={logoUrl} alt="SDR Metrics" className="h-24 w-24 object-contain" />
           <h1 className="text-xl font-semibold text-slate-950">SDR Metrics</h1>
         </div>
         <p className="mt-1 text-sm text-slate-500">{mode === "login" ? "Sign in to your workspace." : "Create your account."}</p>

@@ -73,7 +73,7 @@ export default function AccountsPage() {
               {accounts.filter((account) => account.section === item).map((account) => (
                 <DraggableRow key={account.id} id={account.id}>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
                       <button
                         className="text-slate-400 hover:text-slate-700"
                         onClick={() =>
@@ -89,9 +89,13 @@ export default function AccountsPage() {
                       >
                         {expandedIds.has(account.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                       </button>
-                      <InlineField value={account.name} required onSave={(value) => updateAccount(account.id, { name: value } as Partial<Account>)} />
-                      {account.link ? <a className="text-slate-400 hover:text-sky-600" href={account.link} target="_blank" rel="noreferrer" title="Open"><ExternalLink size={16} /></a> : null}
-                      <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(account.id)} title="Delete"><Trash2 size={16} /></button>
+                      <div className="min-w-0">
+                        <InlineField value={account.name} required onSave={(value) => updateAccount(account.id, { name: value } as Partial<Account>)} />
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        {account.link ? <a className="text-slate-400 hover:text-sky-600" href={account.link} target="_blank" rel="noreferrer" title="Open"><ExternalLink size={16} /></a> : null}
+                        <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(account.id)} title="Delete"><Trash2 size={16} /></button>
+                      </div>
                     </div>
                     {expandedIds.has(account.id) ? (
                       <div className="mt-2 pl-6">

@@ -1,5 +1,5 @@
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { ChevronDown, ChevronRight, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -25,7 +25,7 @@ export default function TasksPage() {
 
   async function createTask() {
     if (!newTask.trim()) return;
-    const data = await api<{ task: Task }>("/tasks", { method: "POST", ...body({ name: newTask, details: null, category: newCategory }) });
+    const data = await api<{ task: Task }>("/tasks", { method: "POST", ...body({ name: newTask, details: null, link: null, category: newCategory }) });
     setItems((current) => [...current, data.task]);
     setNewTask("");
   }
@@ -91,7 +91,7 @@ export default function TasksPage() {
               {activeTasks.filter((task) => task.category === category).map((task) => (
                 <DraggableRow key={task.id} id={task.id}>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-2">
                       <input type="checkbox" className="h-4 w-4" onChange={() => void completeTask(task.id)} />
                       <button
                         className="text-slate-400 hover:text-slate-700"
@@ -108,11 +108,21 @@ export default function TasksPage() {
                       >
                         {expandedIds.has(task.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                       </button>
-                      <InlineField value={task.name} required onSave={(name) => updateTask(task.id, { name } as Partial<Task>)} />
-                      <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(task.id)} title="Delete"><Trash2 size={16} /></button>
+                      <div className="min-w-0">
+                        <InlineField value={task.name} required onSave={(name) => updateTask(task.id, { name } as Partial<Task>)} />
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        {task.link ? <a className="text-slate-400 hover:text-sky-600" href={task.link} target="_blank" rel="noreferrer" title="Open link"><ExternalLink size={16} /></a> : null}
+                        <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(task.id)} title="Delete"><Trash2 size={16} /></button>
+                      </div>
                     </div>
                     {expandedIds.has(task.id) ? (
-                      <TaskDetails value={task.details ?? ""} onSave={(details) => updateTask(task.id, { details: details || null } as Partial<Task>)} />
+                      <TaskExpanded
+                        details={task.details ?? ""}
+                        link={task.link ?? ""}
+                        onSaveDetails={(details) => updateTask(task.id, { details: details || null } as Partial<Task>)}
+                        onSaveLink={(link) => updateTask(task.id, { link: link || null } as Partial<Task>)}
+                      />
                     ) : null}
                   </div>
                 </DraggableRow>
@@ -139,30 +149,59 @@ export default function TasksPage() {
   );
 }
 
-function TaskDetails({ value, onSave }: { value: string; onSave: (value: string) => Promise<void> | void }) {
-  const [draft, setDraft] = useState(value);
+function TaskExpanded({
+  details,
+  link,
+  onSaveDetails,
+  onSaveLink
+}: {
+  details: string;
+  link: string;
+  onSaveDetails: (value: string) => Promise<void> | void;
+  onSaveLink: (value: string) => Promise<void> | void;
+}) {
+  const [draftDetails, setDraftDetails] = useState(details);
+  const [draftLink, setDraftLink] = useState(link);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => setDraft(value), [value]);
+  useEffect(() => setDraftDetails(details), [details]);
+  useEffect(() => setDraftLink(link), [link]);
 
-  async function save() {
-    if (draft.trim() === value) return;
+  async function saveDetails() {
+    if (draftDetails.trim() === details) return;
     setSaving(true);
     try {
-      await onSave(draft.trim());
+      await onSaveDetails(draftDetails.trim());
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveLink() {
+    if (draftLink.trim() === link) return;
+    setSaving(true);
+    try {
+      await onSaveLink(draftLink.trim());
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="mt-2 pl-8">
+    <div className="mt-2 space-y-2 pl-8">
+      <input
+        className="focus-ring h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700"
+        value={draftLink}
+        placeholder="Add task link"
+        onChange={(event) => setDraftLink(event.target.value)}
+        onBlur={() => void saveLink()}
+      />
       <textarea
         className="focus-ring min-h-24 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
-        value={draft}
+        value={draftDetails}
         placeholder="Add details"
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={() => void save()}
+        onChange={(event) => setDraftDetails(event.target.value)}
+        onBlur={() => void saveDetails()}
       />
       <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div>
     </div>

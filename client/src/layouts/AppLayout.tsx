@@ -16,9 +16,9 @@ export function AppLayout() {
   const { user, logout } = useAuth();
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-20 border-r border-slate-200 bg-white/95 px-3 py-4 md:flex md:flex-col">
-        <div className="mb-6 flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-          <img src={logoUrl} alt="SDR Metrics" className="h-8 w-8 object-contain" />
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-28 border-r border-slate-200 bg-white/95 px-4 py-4 md:flex md:flex-col">
+        <div className="mb-6 flex h-20 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+          <img src={logoUrl} alt="SDR Metrics" className="h-16 w-16 object-contain" />
         </div>
         <nav className="flex flex-1 flex-col gap-2">
           {nav.map((item) => (
@@ -40,7 +40,7 @@ export function AppLayout() {
       </aside>
       <div className="border-b border-slate-200 bg-white px-3 py-2 md:hidden">
         <div className="flex items-center gap-2 overflow-x-auto">
-          <img src={logoUrl} alt="SDR Metrics" className="h-9 w-9 shrink-0 object-contain" />
+          <img src={logoUrl} alt="SDR Metrics" className="h-[72px] w-[72px] shrink-0 object-contain" />
           {nav.map((item) => (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => clsx("flex min-w-11 items-center justify-center rounded-lg px-3 py-2", isActive ? "bg-sky-50 text-sky-700" : "text-slate-500")}>
               <item.icon size={19} />
@@ -48,7 +48,7 @@ export function AppLayout() {
           ))}
         </div>
       </div>
-      <main className="mx-auto max-w-7xl px-4 py-6 md:pl-28 md:pr-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 md:pl-36 md:pr-8">
         <Outlet />
       </main>
     </div>
