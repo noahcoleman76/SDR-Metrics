@@ -27,6 +27,8 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent) 55%, var(--text-muted) 45%) color-mix(in srgb, var(--surface-soft) 88%, transparent);
 }
 
 body {
@@ -36,6 +38,34 @@ body {
   background:
     radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 18%, transparent), transparent 32rem),
     linear-gradient(180deg, var(--app-bg), var(--app-bg));
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--surface-soft) 88%, transparent);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 72%, var(--text-muted) 28%),
+    color-mix(in srgb, var(--accent) 48%, var(--border-soft) 52%)
+  );
+  border: 2px solid color-mix(in srgb, var(--surface) 92%, transparent);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, var(--text-main) 30%));
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 button,

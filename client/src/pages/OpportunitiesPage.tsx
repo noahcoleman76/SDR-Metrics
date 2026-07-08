@@ -1,5 +1,5 @@
 import { ExternalLink, Plus, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -33,7 +33,17 @@ export default function OpportunitiesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const tableRef = useRef<HTMLDivElement | null>(null);
   const uniqueItems = useMemo(() => uniqueOpportunities(items), [items]);
+
+  useEffect(() => {
+    function clearSelection(event: MouseEvent) {
+      if (!tableRef.current?.contains(event.target as Node)) setSelectedRowId(null);
+    }
+    document.addEventListener("mousedown", clearSelection);
+    return () => document.removeEventListener("mousedown", clearSelection);
+  }, []);
 
   useEffect(() => {
     if (!message) return;
@@ -173,7 +183,7 @@ export default function OpportunitiesPage() {
         {message ? <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</p> : null}
         {loading ? <p className="text-sm text-slate-500">Loading opportunities...</p> : null}
         {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-        <div className="max-h-[calc(100vh-22rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div ref={tableRef} className="max-h-[calc(100vh-22rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-[1500px] w-full table-fixed text-left text-sm">
             <colgroup>
               <col className="w-[240px]" />
@@ -201,7 +211,12 @@ export default function OpportunitiesPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map((item) => (
-                <tr key={item.id} className="align-top">
+                <tr
+                  key={item.id}
+                  className={`align-top transition ${selectedRowId === item.id ? "bg-sky-50" : "hover:bg-slate-50"}`}
+                  onClick={() => setSelectedRowId(item.id)}
+                  onFocusCapture={() => setSelectedRowId(item.id)}
+                >
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2">
