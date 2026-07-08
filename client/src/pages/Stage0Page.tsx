@@ -33,7 +33,9 @@ export default function Stage0Page() {
 
   useEffect(() => {
     function clearSelection(event: MouseEvent) {
-      if (!tableRef.current?.contains(event.target as Node)) {
+      const target = event.target as HTMLElement;
+      if (target.closest("[data-next-step-editor='true']")) return;
+      if (!tableRef.current?.contains(target)) {
         setSelectedRowId(null);
         setExpandedNextStepId(null);
       }
@@ -212,7 +214,10 @@ export default function Stage0Page() {
                       setExpandedNextStepId(item.id);
                       setSelectedRowId(item.id);
                     }}
-                    onSave={(v) => update(item.id, { nextStep: v || null } as Partial<Stage0Record>)}
+                    onSave={async (v) => {
+                      setItems((current) => current.map((record) => (record.id === item.id ? { ...record, nextStep: v || null } : record)));
+                      await update(item.id, { nextStep: v || null } as Partial<Stage0Record>);
+                    }}
                   />
                 </td>
                 <td className="whitespace-nowrap px-3 py-3">
@@ -291,15 +296,13 @@ function NextStepField({ expanded, value, onExpand, onSave }: { expanded: boolea
   }
 
   return (
-    <div>
+    <div data-next-step-editor="true">
       <textarea
         className="focus-ring min-h-32 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
         value={draft}
         placeholder="Add next step notes"
         onChange={(event) => setDraft(event.target.value)}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) void save();
-        }}
+        onBlur={() => void save()}
         autoFocus
       />
       <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div>
