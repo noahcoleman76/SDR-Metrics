@@ -11,7 +11,7 @@ import { useCollection } from "../hooks/useCollection";
 import { api, body } from "../services/api";
 import type { Stage0Record } from "../types/models";
 import { formatDisplayDate, toDateInput } from "../utils/dates";
-import { readSpreadsheet, valueFor } from "../utils/importSpreadsheet";
+import { dateValueFor, readSpreadsheet, valueFor } from "../utils/importSpreadsheet";
 import { externalHref } from "../utils/links";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", accountExecutive: "", nextStep: "" };
@@ -76,7 +76,7 @@ export default function Stage0Page() {
           accountName: valueFor(row, ["Account name", "Account"]),
           opportunityNumber: valueFor(row, ["Opportunity number", "Opp #", "Opp number"]),
           link: valueFor(row, ["Link"]),
-          createdDate: valueFor(row, ["Created date", "Created"]),
+          createdDate: dateValueFor(row, ["Created date", "Created"]),
           accountExecutive: valueFor(row, ["Account Executive", "AE"]),
           nextStep: valueFor(row, ["Next step"])
         }))
@@ -86,9 +86,13 @@ export default function Stage0Page() {
         return;
       }
       const created: Stage0Record[] = [];
-      for (const payload of payloads) {
-        const data = await api<{ record: Stage0Record }>("/stage0", { method: "POST", ...body(payload) });
-        created.push(data.record);
+      for (let index = 0; index < payloads.length; index += 1) {
+        try {
+          const data = await api<{ record: Stage0Record }>("/stage0", { method: "POST", ...body(payloads[index]) });
+          created.push(data.record);
+        } catch (err) {
+          throw new Error(`Row ${index + 2}: ${err instanceof Error ? err.message : "Could not import row"}`);
+        }
       }
       setItems((current) => [...created, ...current]);
       setMessage(`Uploaded ${created.length} Stage 0 opportunities`);

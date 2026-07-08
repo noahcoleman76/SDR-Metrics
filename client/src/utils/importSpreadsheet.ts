@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { format, isValid, parse } from "date-fns";
 
 export type ImportedRow = Record<string, string>;
 
@@ -27,7 +28,27 @@ export function valueFor(row: ImportedRow, labels: string[]) {
   return "";
 }
 
+export function dateValueFor(row: ImportedRow, labels: string[]) {
+  return normalizeDateValue(valueFor(row, labels));
+}
+
 function normalizeCell(value: unknown) {
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value ?? "").trim();
+}
+
+function normalizeDateValue(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+  const formats = ["M/d/yyyy", "MM/dd/yyyy", "M-d-yyyy", "MM-dd-yyyy", "M/d/yy", "MM/dd/yy", "MMM d, yyyy", "MMMM d, yyyy"];
+  for (const candidateFormat of formats) {
+    const parsed = parse(trimmed, candidateFormat, new Date());
+    if (isValid(parsed)) return format(parsed, "yyyy-MM-dd");
+  }
+
+  const nativeDate = new Date(trimmed);
+  if (isValid(nativeDate)) return format(nativeDate, "yyyy-MM-dd");
+  return trimmed;
 }

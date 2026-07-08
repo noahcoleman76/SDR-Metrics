@@ -11,7 +11,7 @@ import { useCollection } from "../hooks/useCollection";
 import { api, body } from "../services/api";
 import type { IcmStatus, Opportunity, OpportunityStatus } from "../types/models";
 import { formatDisplayDate, inCurrentPeriod, toDateInput, type Period } from "../utils/dates";
-import { readSpreadsheet, valueFor } from "../utils/importSpreadsheet";
+import { dateValueFor, readSpreadsheet, valueFor } from "../utils/importSpreadsheet";
 import { icmLabels, opportunityStatusLabels } from "../utils/labels";
 import { externalHref } from "../utils/links";
 
@@ -94,8 +94,8 @@ export default function OpportunitiesPage() {
           accountName: valueFor(row, ["Account name", "Account"]),
           opportunityNumber: valueFor(row, ["Opportunity number", "Opp #", "Opp number"]),
           link: valueFor(row, ["Link"]),
-          createdDate: valueFor(row, ["Created date", "Created"]),
-          approvedDate: valueFor(row, ["Approved date", "Approved"]),
+          createdDate: dateValueFor(row, ["Created date", "Created"]),
+          approvedDate: dateValueFor(row, ["Approved date", "Approved"]),
           accountExecutive: valueFor(row, ["Account Executive", "AE"]),
           status: normalizeStatus(valueFor(row, ["Status"])) ?? "STAGE_1_PENDING",
           inIcm: normalizeIcm(valueFor(row, ["In ICM", "ICM"])) ?? "PENDING"
@@ -106,9 +106,13 @@ export default function OpportunitiesPage() {
         return;
       }
       const created: Opportunity[] = [];
-      for (const payload of payloads) {
-        const data = await api<{ opportunity: Opportunity }>("/opportunities", { method: "POST", ...body(payload) });
-        created.push(data.opportunity);
+      for (let index = 0; index < payloads.length; index += 1) {
+        try {
+          const data = await api<{ opportunity: Opportunity }>("/opportunities", { method: "POST", ...body(payloads[index]) });
+          created.push(data.opportunity);
+        } catch (err) {
+          throw new Error(`Row ${index + 2}: ${err instanceof Error ? err.message : "Could not import row"}`);
+        }
       }
       setItems((current) => [...created, ...current]);
       setMessage(`Uploaded ${created.length} opportunities`);
