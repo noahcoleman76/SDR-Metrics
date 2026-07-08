@@ -115,6 +115,7 @@ export default function OpportunitiesPage() {
         }
       }
       setItems((current) => [...created, ...current]);
+      setFilters(emptyFilters);
       setMessage(`Uploaded ${created.length} opportunities`);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not upload opportunities");

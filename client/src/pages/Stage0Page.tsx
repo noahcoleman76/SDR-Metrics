@@ -95,6 +95,7 @@ export default function Stage0Page() {
         }
       }
       setItems((current) => [...created, ...current]);
+      setFilters(emptyFilters);
       setMessage(`Uploaded ${created.length} Stage 0 opportunities`);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not upload Stage 0 opportunities");

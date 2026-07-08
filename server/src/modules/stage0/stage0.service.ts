@@ -1,6 +1,5 @@
 import { prisma } from "../../config/prisma.js";
 import { ApiError } from "../../utils/api-error.js";
-import { assertOpportunityNumberAvailable } from "../opportunities/opportunity-number.js";
 
 type Stage0Input = {
   accountName: string;
@@ -16,19 +15,16 @@ export function list(userId: string) {
 }
 
 export async function create(userId: string, data: Stage0Input) {
-  await assertOpportunityNumberAvailable(userId, data.opportunityNumber);
   return prisma.stage0Record.create({ data: { userId, ...data } });
 }
 
 export async function update(userId: string, id: string, data: Partial<Stage0Input>) {
   await assertOwns(userId, id);
-  await assertOpportunityNumberAvailable(userId, data.opportunityNumber, { stage0Id: id });
   return prisma.stage0Record.update({ where: { id }, data });
 }
 
 export async function moveToOpportunity(userId: string, id: string) {
   const record = await assertOwns(userId, id);
-  await assertOpportunityNumberAvailable(userId, record.opportunityNumber, { stage0Id: id });
   return prisma.$transaction(async (tx) => {
     const opportunity = await tx.opportunity.create({
       data: {

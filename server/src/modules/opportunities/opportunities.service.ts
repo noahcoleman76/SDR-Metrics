@@ -1,7 +1,6 @@
 import { IcmStatus, OpportunityStatus } from "@prisma/client";
 import { prisma } from "../../config/prisma.js";
 import { ApiError } from "../../utils/api-error.js";
-import { assertOpportunityNumberAvailable } from "./opportunity-number.js";
 
 type OpportunityInput = {
   accountName: string;
@@ -19,13 +18,11 @@ export function list(userId: string) {
 }
 
 export async function create(userId: string, data: OpportunityInput) {
-  await assertOpportunityNumberAvailable(userId, data.opportunityNumber);
   return prisma.opportunity.create({ data: { userId, ...data } });
 }
 
 export async function update(userId: string, id: string, data: Partial<OpportunityInput>) {
   await assertOwns(userId, id);
-  await assertOpportunityNumberAvailable(userId, data.opportunityNumber, { opportunityId: id });
   return prisma.opportunity.update({ where: { id }, data });
 }
 
