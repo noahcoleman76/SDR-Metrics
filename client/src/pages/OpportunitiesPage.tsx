@@ -175,9 +175,9 @@ export default function OpportunitiesPage() {
       />
       <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Metric label="Clean opportunities this month" value={metrics.cleanMonth} />
+        <Metric label="Total opportunities this month" value={metrics.totalMonth} />
         <Metric label="Clean opportunities this year" value={metrics.cleanYear} />
-        <Metric label="Total approved this month" value={metrics.totalMonth} />
-        <Metric label="Total approved this year" value={metrics.totalYear} />
+        <Metric label="Total opportunities this year" value={metrics.totalYear} />
       </div>
       <section className="min-w-0">
         {message ? <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</p> : null}
