@@ -1,5 +1,5 @@
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { ExternalLink, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -20,6 +20,7 @@ export default function AccountsPage() {
   const [link, setLink] = useState("");
   const [section, setSection] = useState<AccountSection>("LEAD_MILLING");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   async function add() {
     if (!name.trim()) return;
@@ -71,11 +72,32 @@ export default function AccountsPage() {
             <DroppableColumn key={item} id={item} title={accountSectionLabels[item]}>
               {accounts.filter((account) => account.section === item).map((account) => (
                 <DraggableRow key={account.id} id={account.id}>
-                  <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center">
-                    <InlineField value={account.name} required onSave={(value) => updateAccount(account.id, { name: value } as Partial<Account>)} />
-                    <InlineField value={account.link ?? ""} placeholder="Link" onSave={(value) => updateAccount(account.id, { link: value || null } as Partial<Account>)} />
-                    {account.link ? <a className="text-slate-400 hover:text-sky-600" href={account.link} target="_blank" rel="noreferrer" title="Open"><ExternalLink size={16} /></a> : <span />}
-                    <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(account.id)} title="Delete"><Trash2 size={16} /></button>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="text-slate-400 hover:text-slate-700"
+                        onClick={() =>
+                          setExpandedIds((current) => {
+                            const next = new Set(current);
+                            if (next.has(account.id)) next.delete(account.id);
+                            else next.add(account.id);
+                            return next;
+                          })
+                        }
+                        title={expandedIds.has(account.id) ? "Collapse link" : "Expand link"}
+                        type="button"
+                      >
+                        {expandedIds.has(account.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </button>
+                      <InlineField value={account.name} required onSave={(value) => updateAccount(account.id, { name: value } as Partial<Account>)} />
+                      {account.link ? <a className="text-slate-400 hover:text-sky-600" href={account.link} target="_blank" rel="noreferrer" title="Open"><ExternalLink size={16} /></a> : null}
+                      <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(account.id)} title="Delete"><Trash2 size={16} /></button>
+                    </div>
+                    {expandedIds.has(account.id) ? (
+                      <div className="mt-2 pl-6">
+                        <InlineField value={account.link ?? ""} placeholder="Add account link" onSave={(value) => updateAccount(account.id, { link: value || null } as Partial<Account>)} />
+                      </div>
+                    ) : null}
                   </div>
                 </DraggableRow>
               ))}
