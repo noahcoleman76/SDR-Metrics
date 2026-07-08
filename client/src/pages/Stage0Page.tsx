@@ -193,7 +193,10 @@ export default function Stage0Page() {
               <tr
                 key={item.id}
                 className={`align-top transition ${selectedRowId === item.id ? "selected-row" : "hover:bg-slate-50"}`}
-                onClick={() => setSelectedRowId(item.id)}
+                onClick={(event) => {
+                  if ((event.target as HTMLElement).closest("[data-next-step-editor='true']")) return;
+                  setSelectedRowId(item.id);
+                }}
                 onFocusCapture={() => setSelectedRowId(item.id)}
               >
                 <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Stage0Record>)} /></td>
@@ -296,7 +299,11 @@ function NextStepField({ expanded, value, onExpand, onSave }: { expanded: boolea
   }
 
   return (
-    <div data-next-step-editor="true">
+    <div
+      data-next-step-editor="true"
+      onMouseDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
       <textarea
         className="focus-ring min-h-32 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
         value={draft}
