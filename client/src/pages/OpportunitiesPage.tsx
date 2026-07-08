@@ -20,6 +20,7 @@ const icmStatuses: IcmStatus[] = ["PENDING", "YES", "NO"];
 const blankValue = "__blank__";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", approvedDate: "", accountExecutive: "", status: "STAGE_1_PENDING" as OpportunityStatus, inIcm: "PENDING" as IcmStatus };
+type OpportunityViewPeriod = "all" | Period;
 type OpportunityFilterKey = "accountName" | "opportunityNumber" | "link" | "createdDate" | "approvedDate" | "accountExecutive" | "status" | "inIcm";
 type OpportunityFilters = Record<OpportunityFilterKey, string[]>;
 const emptyFilters: OpportunityFilters = { accountName: [], opportunityNumber: [], link: [], createdDate: [], approvedDate: [], accountExecutive: [], status: [], inIcm: [] };
@@ -28,47 +29,48 @@ export default function OpportunitiesPage() {
   const { items, setItems, loading, error } = useCollection<Opportunity>("/opportunities", "opportunities");
   const [form, setForm] = useState(emptyForm);
   const [filters, setFilters] = useState<OpportunityFilters>(emptyFilters);
-  const [period, setPeriod] = useState<Period>("month");
+  const [period, setPeriod] = useState<OpportunityViewPeriod>("year");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const uniqueItems = useMemo(() => uniqueOpportunities(items), [items]);
 
   const filtered = useMemo(() => {
-    return items.filter((item) => {
+    return uniqueItems.filter((item) => {
       return (Object.keys(filters) as OpportunityFilterKey[]).every((key) => {
         const selected = filters[key];
         return selected.length === 0 || selected.includes(opportunityFilterValue(item, key));
-      });
+      }) && (period === "all" || inCurrentPeriod(item.approvedDate, period));
     });
-  }, [filters, items]);
+  }, [filters, period, uniqueItems]);
 
   const filterOptions = useMemo(() => {
     return {
-      accountName: optionsFrom(items, (item) => textFilterValue(item.accountName)),
-      opportunityNumber: optionsFrom(items, (item) => textFilterValue(item.opportunityNumber)),
-      link: optionsFrom(items, (item) => textFilterValue(item.link)),
-      createdDate: optionsFrom(items, (item) => dateFilterValue(item.createdDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
-      approvedDate: optionsFrom(items, (item) => dateFilterValue(item.approvedDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
-      accountExecutive: optionsFrom(items, (item) => textFilterValue(item.accountExecutive)),
-      status: optionsFrom(items, (item) => item.status, (value) => opportunityStatusLabels[value as OpportunityStatus]),
-      inIcm: optionsFrom(items, (item) => item.inIcm, (value) => icmLabels[value as IcmStatus])
+      accountName: optionsFrom(uniqueItems, (item) => textFilterValue(item.accountName)),
+      opportunityNumber: optionsFrom(uniqueItems, (item) => textFilterValue(item.opportunityNumber)),
+      link: optionsFrom(uniqueItems, (item) => textFilterValue(item.link)),
+      createdDate: optionsFrom(uniqueItems, (item) => dateFilterValue(item.createdDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
+      approvedDate: optionsFrom(uniqueItems, (item) => dateFilterValue(item.approvedDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
+      accountExecutive: optionsFrom(uniqueItems, (item) => textFilterValue(item.accountExecutive)),
+      status: optionsFrom(uniqueItems, (item) => item.status, (value) => opportunityStatusLabels[value as OpportunityStatus]),
+      inIcm: optionsFrom(uniqueItems, (item) => item.inIcm, (value) => icmLabels[value as IcmStatus])
     } satisfies Record<OpportunityFilterKey, FilterOption[]>;
-  }, [items]);
+  }, [uniqueItems]);
 
   function setColumnFilter(key: OpportunityFilterKey, values: string[]) {
     setFilters((current) => ({ ...current, [key]: values }));
   }
 
   const metrics = useMemo(() => {
-    const approvedThisMonth = items.filter((item) => inCurrentPeriod(item.approvedDate, "month"));
-    const approvedThisYear = items.filter((item) => inCurrentPeriod(item.approvedDate, "year"));
+    const approvedThisMonth = uniqueItems.filter((item) => inCurrentPeriod(item.approvedDate, "month"));
+    const approvedThisYear = uniqueItems.filter((item) => inCurrentPeriod(item.approvedDate, "year"));
     return {
       cleanMonth: approvedThisMonth.filter((item) => item.status === "CLEAN").length,
       cleanYear: approvedThisYear.filter((item) => item.status === "CLEAN").length,
       totalMonth: approvedThisMonth.length,
       totalYear: approvedThisYear.length
     };
-  }, [items]);
+  }, [uniqueItems]);
 
   async function add() {
     if (!form.accountName.trim()) {
@@ -89,6 +91,8 @@ export default function OpportunitiesPage() {
   async function upload(file: File) {
     try {
       const rows = await readSpreadsheet(file);
+      const existingKeys = new Set(items.map(opportunityImportKey));
+      const payloadKeys = new Set<string>();
       const payloads = rows
         .map((row) => ({
           accountName: valueFor(row, ["Account name", "Account"]),
@@ -100,9 +104,15 @@ export default function OpportunitiesPage() {
           status: normalizeStatus(valueFor(row, ["Status"])) ?? "STAGE_1_PENDING",
           inIcm: normalizeIcm(valueFor(row, ["In ICM", "ICM"])) ?? "PENDING"
         }))
-        .filter((row) => row.accountName.trim());
+        .filter((row) => {
+          if (!row.accountName.trim()) return false;
+          const key = opportunityPayloadKey(row);
+          if (existingKeys.has(key) || payloadKeys.has(key)) return false;
+          payloadKeys.add(key);
+          return true;
+        });
       if (!payloads.length) {
-        setMessage("No rows with account names were found");
+        setMessage("No new rows with account names were found");
         return;
       }
       const created: Opportunity[] = [];
@@ -116,7 +126,7 @@ export default function OpportunitiesPage() {
       }
       setItems((current) => [...created, ...current]);
       setFilters(emptyFilters);
-      setMessage(`Uploaded ${created.length} opportunities`);
+      setMessage(`Uploaded ${created.length} opportunities${rows.length - created.length > 0 ? `, skipped ${rows.length - created.length} duplicate or blank rows` : ""}`);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not upload opportunities");
     }
@@ -173,7 +183,7 @@ export default function OpportunitiesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.filter((item) => period ? inCurrentPeriod(item.approvedDate, period) || !item.approvedDate : true).map((item) => (
+              {filtered.map((item) => (
                 <tr key={item.id} className="align-top">
                   <td className="px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} /></td>
                   <td className="px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Opportunity>)} /></td>
@@ -236,8 +246,9 @@ function Select<T extends string>({ value, values, labels, onChange }: { value: 
   return <select className="focus-ring h-8 rounded-md border border-transparent bg-transparent px-2 text-sm hover:bg-slate-50" value={value} onChange={(event) => onChange(event.target.value as T)}>{values.map((v) => <option key={v} value={v}>{labels[v]}</option>)}</select>;
 }
 
-function PeriodToggle({ value, onChange }: { value: Period; onChange: (period: Period) => void }) {
-  return <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">{(["month", "quarter", "year"] as Period[]).map((p) => <button key={p} className={`rounded-md px-3 py-1.5 text-sm capitalize ${value === p ? "bg-slate-950 text-white" : "text-slate-500"}`} onClick={() => onChange(p)}>{p}</button>)}</div>;
+function PeriodToggle({ value, onChange }: { value: OpportunityViewPeriod; onChange: (period: OpportunityViewPeriod) => void }) {
+  const labels: Record<OpportunityViewPeriod, string> = { all: "All time", month: "Month", quarter: "Quarter", year: "Year" };
+  return <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">{(["year", "month", "quarter", "all"] as OpportunityViewPeriod[]).map((p) => <button key={p} className={`rounded-md px-3 py-1.5 text-sm ${value === p ? "bg-slate-950 text-white" : "text-slate-500"}`} onClick={() => onChange(p)}>{labels[p]}</button>)}</div>;
 }
 
 function opportunityFilterValue(item: Opportunity, key: OpportunityFilterKey) {
@@ -273,4 +284,44 @@ function normalizeIcm(value: string): IcmStatus | null {
   const normalized = value.trim().toLowerCase();
   const match = icmStatuses.find((status) => icmLabels[status].toLowerCase() === normalized || status.toLowerCase() === normalized);
   return match ?? null;
+}
+
+function opportunityImportKey(item: Pick<Opportunity, "accountName" | "opportunityNumber" | "link" | "createdDate" | "approvedDate" | "accountExecutive" | "status" | "inIcm">) {
+  return [
+    item.accountName,
+    item.opportunityNumber,
+    item.link,
+    toDateInput(item.createdDate),
+    toDateInput(item.approvedDate),
+    item.accountExecutive,
+    item.status,
+    item.inIcm
+  ]
+    .map((value) => (value ?? "").trim().toLowerCase())
+    .join("|");
+}
+
+function opportunityPayloadKey(item: typeof emptyForm) {
+  return [
+    item.accountName,
+    item.opportunityNumber,
+    item.link,
+    item.createdDate,
+    item.approvedDate,
+    item.accountExecutive,
+    item.status,
+    item.inIcm
+  ]
+    .map((value) => (value ?? "").trim().toLowerCase())
+    .join("|");
+}
+
+function uniqueOpportunities(items: Opportunity[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = opportunityImportKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
