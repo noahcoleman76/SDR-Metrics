@@ -34,7 +34,6 @@ export async function moveToOpportunity(userId: string, id: string) {
         link: record.link,
         createdDate: record.createdDate,
         accountExecutive: record.accountExecutive,
-        status: "STAGE_0",
         inIcm: "PENDING"
       }
     });

@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
@@ -28,11 +28,15 @@ export default function Stage0Page() {
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [expandedNextStepId, setExpandedNextStepId] = useState<string | null>(null);
   const tableRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     function clearSelection(event: MouseEvent) {
-      if (!tableRef.current?.contains(event.target as Node)) setSelectedRowId(null);
+      if (!tableRef.current?.contains(event.target as Node)) {
+        setSelectedRowId(null);
+        setExpandedNextStepId(null);
+      }
     }
     document.addEventListener("mousedown", clearSelection);
     return () => document.removeEventListener("mousedown", clearSelection);
@@ -152,15 +156,15 @@ export default function Stage0Page() {
       {loading ? <p className="text-sm text-slate-500">Loading Stage 0 records...</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <div ref={tableRef} className="max-h-[calc(100vh-20rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-[1200px] w-full table-fixed text-left text-sm">
+        <table className="min-w-[1630px] w-full table-fixed text-left text-sm">
           <colgroup>
             <col className="w-[240px]" />
             <col className="w-[170px]" />
             <col className="w-[300px]" />
             <col className="w-[160px]" />
             <col className="w-[220px]" />
-            <col className="w-[260px]" />
-            <col className="w-[80px]" />
+            <col className="w-[360px]" />
+            <col className="w-[180px]" />
           </colgroup>
           <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
@@ -191,10 +195,22 @@ export default function Stage0Page() {
                 </td>
                 <td className="whitespace-nowrap px-2 py-2"><DateEdit value={item.createdDate} onSave={(value) => update(item.id, { createdDate: value } as Partial<Stage0Record>)} /></td>
                 <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Stage0Record>)} /></td>
-                <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.nextStep ?? ""} onSave={(v) => update(item.id, { nextStep: v || null } as Partial<Stage0Record>)} /></td>
+                <td className="px-2 py-2">
+                  <NextStepField
+                    expanded={expandedNextStepId === item.id}
+                    value={item.nextStep ?? ""}
+                    onExpand={() => {
+                      setExpandedNextStepId(item.id);
+                      setSelectedRowId(item.id);
+                    }}
+                    onSave={(v) => update(item.id, { nextStep: v || null } as Partial<Stage0Record>)}
+                  />
+                </td>
                 <td className="whitespace-nowrap px-3 py-3">
-                  <div className="flex gap-2">
-                    <button className="text-slate-400 hover:text-sky-600" onClick={() => void move(item.id)} title="Move to Opportunities"><ArrowRight size={16} /></button>
+                  <div className="flex items-center justify-end gap-2">
+                    <Button className="h-8 px-2 text-xs" onClick={() => void move(item.id)} title="Convert to Stage 1" type="button">
+                      Convert to Stage 1
+                    </Button>
                     <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button>
                   </div>
                 </td>
@@ -232,6 +248,46 @@ function DateEdit({ value, onSave }: { value: string | null; onSave: (value: str
     return <input className="focus-ring h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm whitespace-nowrap hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
   }
   return <button className="focus-ring min-h-8 w-full rounded-md px-2 text-left text-sm whitespace-nowrap text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
+}
+
+function NextStepField({ expanded, value, onExpand, onSave }: { expanded: boolean; value: string; onExpand: () => void; onSave: (value: string) => Promise<void> | void }) {
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => setDraft(value), [value]);
+
+  async function save() {
+    const next = draft.trim();
+    if (next === value) return;
+    setSaving(true);
+    try {
+      await onSave(next);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!expanded) {
+    return (
+      <button className="focus-ring min-h-8 w-full rounded-md px-2 text-left text-sm whitespace-nowrap text-slate-700 hover:bg-slate-50" onClick={onExpand} type="button">
+        {value || "Add next step"}
+      </button>
+    );
+  }
+
+  return (
+    <div>
+      <textarea
+        className="focus-ring min-h-32 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
+        value={draft}
+        placeholder="Add next step notes"
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => void save()}
+        autoFocus
+      />
+      <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div>
+    </div>
+  );
 }
 
 function stage0FilterValue(item: Stage0Record, key: Stage0FilterKey) {
