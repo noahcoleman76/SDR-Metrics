@@ -13,6 +13,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@tailwindcss/vite": "^4.1.13",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.544.0",
@@ -20,7 +21,7 @@
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.9.1",
     "tailwindcss": "^4.1.13",
-    "@tailwindcss/vite": "^4.1.13"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",

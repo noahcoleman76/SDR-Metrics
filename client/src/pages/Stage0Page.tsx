@@ -6,10 +6,12 @@ import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InlineField } from "../components/InlineField";
 import { Modal } from "../components/Modal";
 import { PageHeader } from "../components/PageHeader";
+import { UploadButton } from "../components/UploadButton";
 import { useCollection } from "../hooks/useCollection";
 import { api, body } from "../services/api";
 import type { Stage0Record } from "../types/models";
 import { formatDisplayDate, toDateInput } from "../utils/dates";
+import { readSpreadsheet, valueFor } from "../utils/importSpreadsheet";
 import { externalHref } from "../utils/links";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", accountExecutive: "", nextStep: "" };
@@ -66,6 +68,35 @@ export default function Stage0Page() {
     }
   }
 
+  async function upload(file: File) {
+    try {
+      const rows = await readSpreadsheet(file);
+      const payloads = rows
+        .map((row) => ({
+          accountName: valueFor(row, ["Account name", "Account"]),
+          opportunityNumber: valueFor(row, ["Opportunity number", "Opp #", "Opp number"]),
+          link: valueFor(row, ["Link"]),
+          createdDate: valueFor(row, ["Created date", "Created"]),
+          accountExecutive: valueFor(row, ["Account Executive", "AE"]),
+          nextStep: valueFor(row, ["Next step"])
+        }))
+        .filter((row) => row.accountName.trim());
+      if (!payloads.length) {
+        setMessage("No rows with account names were found");
+        return;
+      }
+      const created: Stage0Record[] = [];
+      for (const payload of payloads) {
+        const data = await api<{ record: Stage0Record }>("/stage0", { method: "POST", ...body(payload) });
+        created.push(data.record);
+      }
+      setItems((current) => [...created, ...current]);
+      setMessage(`Uploaded ${created.length} Stage 0 opportunities`);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Could not upload Stage 0 opportunities");
+    }
+  }
+
   async function update(id: string, patch: Partial<Stage0Record>) {
     const data = await api<{ record: Stage0Record }>(`/stage0/${id}`, { method: "PATCH", ...body(patch) });
     setItems((current) => current.map((item) => (item.id === id ? data.record : item)));
@@ -86,7 +117,16 @@ export default function Stage0Page() {
 
   return (
     <>
-      <PageHeader title="Stage 0" description="Early-stage opportunities before manual promotion." actions={<Button variant="primary" icon={<Plus size={16} />} onClick={() => setModalOpen(true)}>Add opportunity</Button>} />
+      <PageHeader
+        title="Stage 0"
+        description="Early-stage opportunities before manual promotion."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <UploadButton onFile={(file) => void upload(file)} />
+            <Button variant="primary" icon={<Plus size={16} />} onClick={() => setModalOpen(true)}>Add opportunity</Button>
+          </div>
+        }
+      />
       {message ? <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</p> : null}
       {loading ? <p className="text-sm text-slate-500">Loading Stage 0 records...</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}

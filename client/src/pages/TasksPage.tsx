@@ -190,19 +190,19 @@ function TaskExpanded({
 
   return (
     <div className="mt-2 space-y-2 pl-8">
-      <input
-        className="focus-ring h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700"
-        value={draftLink}
-        placeholder="Add task link"
-        onChange={(event) => setDraftLink(event.target.value)}
-        onBlur={() => void saveLink()}
-      />
       <textarea
         className="focus-ring min-h-24 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
         value={draftDetails}
         placeholder="Add details"
         onChange={(event) => setDraftDetails(event.target.value)}
         onBlur={() => void saveDetails()}
+      />
+      <input
+        className="focus-ring h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700"
+        value={draftLink}
+        placeholder="Add task link"
+        onChange={(event) => setDraftLink(event.target.value)}
+        onBlur={() => void saveLink()}
       />
       <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div>
     </div>

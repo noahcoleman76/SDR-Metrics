@@ -6,10 +6,12 @@ import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InlineField } from "../components/InlineField";
 import { Modal } from "../components/Modal";
 import { PageHeader } from "../components/PageHeader";
+import { UploadButton } from "../components/UploadButton";
 import { useCollection } from "../hooks/useCollection";
 import { api, body } from "../services/api";
 import type { IcmStatus, Opportunity, OpportunityStatus } from "../types/models";
 import { formatDisplayDate, inCurrentPeriod, toDateInput, type Period } from "../utils/dates";
+import { readSpreadsheet, valueFor } from "../utils/importSpreadsheet";
 import { icmLabels, opportunityStatusLabels } from "../utils/labels";
 import { externalHref } from "../utils/links";
 
@@ -84,6 +86,37 @@ export default function OpportunitiesPage() {
     }
   }
 
+  async function upload(file: File) {
+    try {
+      const rows = await readSpreadsheet(file);
+      const payloads = rows
+        .map((row) => ({
+          accountName: valueFor(row, ["Account name", "Account"]),
+          opportunityNumber: valueFor(row, ["Opportunity number", "Opp #", "Opp number"]),
+          link: valueFor(row, ["Link"]),
+          createdDate: valueFor(row, ["Created date", "Created"]),
+          approvedDate: valueFor(row, ["Approved date", "Approved"]),
+          accountExecutive: valueFor(row, ["Account Executive", "AE"]),
+          status: normalizeStatus(valueFor(row, ["Status"])) ?? "STAGE_1_PENDING",
+          inIcm: normalizeIcm(valueFor(row, ["In ICM", "ICM"])) ?? "PENDING"
+        }))
+        .filter((row) => row.accountName.trim());
+      if (!payloads.length) {
+        setMessage("No rows with account names were found");
+        return;
+      }
+      const created: Opportunity[] = [];
+      for (const payload of payloads) {
+        const data = await api<{ opportunity: Opportunity }>("/opportunities", { method: "POST", ...body(payload) });
+        created.push(data.opportunity);
+      }
+      setItems((current) => [...created, ...current]);
+      setMessage(`Uploaded ${created.length} opportunities`);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Could not upload opportunities");
+    }
+  }
+
   async function update(id: string, patch: Partial<Opportunity>) {
     const data = await api<{ opportunity: Opportunity }>(`/opportunities/${id}`, { method: "PATCH", ...body(patch) });
     setItems((current) => current.map((item) => (item.id === id ? data.opportunity : item)));
@@ -104,6 +137,7 @@ export default function OpportunitiesPage() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <PeriodToggle value={period} onChange={setPeriod} />
+            <UploadButton onFile={(file) => void upload(file)} />
             <Button variant="primary" icon={<Plus size={16} />} onClick={() => setModalOpen(true)}>Add opportunity</Button>
           </div>
         }
@@ -222,4 +256,16 @@ function optionsFrom<T>(items: T[], getValue: (item: T) => string, getLabel: (va
   return Array.from(new Set(items.map(getValue)))
     .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
     .map((value) => ({ value, label: getLabel(value) }));
+}
+
+function normalizeStatus(value: string): OpportunityStatus | null {
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  const match = statuses.find((status) => opportunityStatusLabels[status].toLowerCase().replace(/[^a-z0-9]/g, "") === normalized || status.toLowerCase().replace(/[^a-z0-9]/g, "") === normalized);
+  return match ?? null;
+}
+
+function normalizeIcm(value: string): IcmStatus | null {
+  const normalized = value.trim().toLowerCase();
+  const match = icmStatuses.find((status) => icmLabels[status].toLowerCase() === normalized || status.toLowerCase() === normalized);
+  return match ?? null;
 }
