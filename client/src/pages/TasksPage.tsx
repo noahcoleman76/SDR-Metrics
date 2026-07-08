@@ -1,6 +1,6 @@
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { Plus, RotateCcw, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DraggableRow } from "../components/DraggableRow";
@@ -19,12 +19,13 @@ export default function TasksPage() {
   const [newTask, setNewTask] = useState("");
   const [newCategory, setNewCategory] = useState<TaskCategory>("DAILY");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const activeTasks = useMemo(() => tasks.filter((task) => !task.completedAt), [tasks]);
   const completed = useMemo(() => tasks.filter((task) => task.completedAt), [tasks]);
 
   async function createTask() {
     if (!newTask.trim()) return;
-    const data = await api<{ task: Task }>("/tasks", { method: "POST", ...body({ name: newTask, category: newCategory }) });
+    const data = await api<{ task: Task }>("/tasks", { method: "POST", ...body({ name: newTask, details: null, category: newCategory }) });
     setItems((current) => [...current, data.task]);
     setNewTask("");
   }
@@ -41,11 +42,25 @@ export default function TasksPage() {
 
   async function onDragEnd(event: DragEndEvent) {
     const task = tasks.find((item) => item.id === event.active.id);
-    const category = event.over?.id as TaskCategory | undefined;
-    if (!task || !category || !categories.includes(category)) return;
-    const moved = tasks.map((item) => (item.id === task.id ? { ...item, category } : item));
-    const ordered = moved.map((item) => ({ id: item.id, category: item.category, position: moved.filter((candidate) => candidate.category === item.category).findIndex((candidate) => candidate.id === item.id) }));
-    setItems(moved);
+    const overId = event.over?.id as string | undefined;
+    if (!task || !overId || task.id === overId) return;
+
+    const overTask = tasks.find((item) => item.id === overId);
+    const destinationCategory = overTask?.category ?? (categories.includes(overId as TaskCategory) ? (overId as TaskCategory) : undefined);
+    if (!destinationCategory) return;
+
+    const nextActive = activeTasks.filter((item) => item.id !== task.id);
+    const movedTask = { ...task, category: destinationCategory };
+    const targetIndex = overTask ? nextActive.findIndex((item) => item.id === overTask.id) : -1;
+    const insertIndex = targetIndex >= 0 ? targetIndex : nextActive.filter((item) => item.category === destinationCategory).length;
+    const destinationIndices = nextActive.reduce<number[]>((indices, item, index) => (item.category === destinationCategory ? [...indices, index] : indices), []);
+    const absoluteIndex = targetIndex >= 0 ? targetIndex : destinationIndices[insertIndex] ?? nextActive.length;
+    nextActive.splice(absoluteIndex, 0, movedTask);
+
+    const activeIds = new Set(nextActive.map((item) => item.id));
+    const reordered = [...nextActive, ...tasks.filter((item) => !activeIds.has(item.id))];
+    const ordered = nextActive.map((item) => ({ id: item.id, category: item.category, position: nextActive.filter((candidate) => candidate.category === item.category).findIndex((candidate) => candidate.id === item.id) }));
+    setItems(reordered);
     const data = await api<{ tasks: Task[] }>("/tasks/reorder", { method: "PATCH", ...body({ items: ordered }) });
     setItems(data.tasks);
   }
@@ -75,10 +90,30 @@ export default function TasksPage() {
             <DroppableColumn key={category} id={category} title={taskCategoryLabels[category]}>
               {activeTasks.filter((task) => task.category === category).map((task) => (
                 <DraggableRow key={task.id} id={task.id}>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" className="h-4 w-4" onChange={() => void completeTask(task.id)} />
-                    <InlineField value={task.name} required onSave={(name) => updateTask(task.id, { name } as Partial<Task>)} />
-                    <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(task.id)} title="Delete"><Trash2 size={16} /></button>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" className="h-4 w-4" onChange={() => void completeTask(task.id)} />
+                      <button
+                        className="text-slate-400 hover:text-slate-700"
+                        onClick={() =>
+                          setExpandedIds((current) => {
+                            const next = new Set(current);
+                            if (next.has(task.id)) next.delete(task.id);
+                            else next.add(task.id);
+                            return next;
+                          })
+                        }
+                        title={expandedIds.has(task.id) ? "Collapse details" : "Expand details"}
+                        type="button"
+                      >
+                        {expandedIds.has(task.id) ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </button>
+                      <InlineField value={task.name} required onSave={(name) => updateTask(task.id, { name } as Partial<Task>)} />
+                      <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(task.id)} title="Delete"><Trash2 size={16} /></button>
+                    </div>
+                    {expandedIds.has(task.id) ? (
+                      <TaskDetails value={task.details ?? ""} onSave={(details) => updateTask(task.id, { details: details || null } as Partial<Task>)} />
+                    ) : null}
                   </div>
                 </DraggableRow>
               ))}
@@ -101,5 +136,35 @@ export default function TasksPage() {
       ) : null}
       <ConfirmDialog open={Boolean(deleteId)} title="Delete task" description="This permanently deletes the task." onCancel={() => setDeleteId(null)} onConfirm={() => void remove()} />
     </>
+  );
+}
+
+function TaskDetails({ value, onSave }: { value: string; onSave: (value: string) => Promise<void> | void }) {
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => setDraft(value), [value]);
+
+  async function save() {
+    if (draft.trim() === value) return;
+    setSaving(true);
+    try {
+      await onSave(draft.trim());
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-2 pl-8">
+      <textarea
+        className="focus-ring min-h-24 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700"
+        value={draft}
+        placeholder="Add details"
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => void save()}
+      />
+      <div className="mt-1 text-xs text-slate-400">{saving ? "Saving..." : "Auto-saved on blur"}</div>
+    </div>
   );
 }

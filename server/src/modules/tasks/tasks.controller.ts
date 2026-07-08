@@ -6,11 +6,13 @@ import * as service from "./tasks.service.js";
 
 const taskSchema = z.object({
   name: z.string().trim().min(1, "Task name is required"),
+  details: z.string().trim().nullable().optional(),
   category: z.nativeEnum(TaskCategory)
 });
 
 const updateSchema = z.object({
   name: z.string().trim().min(1).optional(),
+  details: z.string().trim().nullable().optional(),
   category: z.nativeEnum(TaskCategory).optional(),
   completedAt: z.union([z.string().datetime(), z.null()]).optional()
 });

@@ -23,12 +23,12 @@ export async function list(userId: string) {
   return prisma.task.findMany({ where: { userId }, orderBy: [{ category: "asc" }, { position: "asc" }] });
 }
 
-export async function create(userId: string, data: { name: string; category: TaskCategory }) {
+export async function create(userId: string, data: { name: string; details?: string | null; category: TaskCategory }) {
   const count = await prisma.task.count({ where: { userId, category: data.category } });
-  return prisma.task.create({ data: { userId, name: data.name, category: data.category, position: count } });
+  return prisma.task.create({ data: { userId, name: data.name, details: data.details, category: data.category, position: count } });
 }
 
-export async function update(userId: string, id: string, data: Partial<{ name: string; category: TaskCategory; completedAt: Date | null; position: number }>) {
+export async function update(userId: string, id: string, data: Partial<{ name: string; details: string | null; category: TaskCategory; completedAt: Date | null; position: number }>) {
   await assertOwns(userId, id);
   return prisma.task.update({ where: { id }, data });
 }

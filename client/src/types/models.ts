@@ -9,6 +9,7 @@ export type Task = {
   id: string;
   userId: string;
   name: string;
+  details: string | null;
   category: TaskCategory;
   position: number;
   completedAt: string | null;
