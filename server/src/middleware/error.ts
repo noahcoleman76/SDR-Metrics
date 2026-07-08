@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from "express";
-import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 import { ApiError } from "../utils/api-error.js";
 
@@ -14,7 +13,7 @@ export function errorHandler(error: unknown, _req: Request, res: Response, _next
   if (error instanceof ApiError) {
     return res.status(error.status).json({ message: error.message, details: error.details });
   }
-  if (error instanceof Prisma.PrismaClientInitializationError) {
+  if (error instanceof Error && error.name === "PrismaClientInitializationError") {
     return res.status(503).json({ message: "Database is unavailable. Make sure PostgreSQL is running and DATABASE_URL is correct." });
   }
   console.error(error);
