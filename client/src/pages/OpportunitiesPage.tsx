@@ -187,7 +187,7 @@ export default function OpportunitiesPage() {
         <div ref={tableRef} className="max-h-[calc(100vh-18rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-[1500px] w-full table-fixed text-left text-sm">
             <colgroup>
-              <col className="w-[240px]" />
+              <col className="w-[260px]" />
               <col className="w-[170px]" />
               <col className="w-[300px]" />
               <col className="w-[160px]" />
@@ -195,7 +195,7 @@ export default function OpportunitiesPage() {
               <col className="w-[220px]" />
               <col className="w-[180px]" />
               <col className="w-[140px]" />
-              <col className="w-[96px]" />
+              <col className="w-[64px]" />
             </colgroup>
             <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
@@ -216,7 +216,20 @@ export default function OpportunitiesPage() {
                   key={item.id}
                   className={`data-row align-top transition ${highlightedRowIds.has(item.id) ? "selected-row" : "hover:bg-slate-50"}`}
                 >
-                  <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="h-4 w-4 shrink-0 accent-[var(--accent)]"
+                        checked={highlightedRowIds.has(item.id)}
+                        onChange={() => toggleHighlight(item.id)}
+                        title="Highlight row"
+                        type="checkbox"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} />
+                      </div>
+                    </div>
+                  </td>
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2">
                     <div className="flex items-center gap-2">
@@ -230,14 +243,7 @@ export default function OpportunitiesPage() {
                   <td className="whitespace-nowrap px-2 py-2"><Select value={item.status} values={statuses} labels={opportunityStatusLabels} onChange={(v) => update(item.id, { status: v as OpportunityStatus } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><Select value={item.inIcm} values={icmStatuses} labels={icmLabels} onChange={(v) => update(item.id, { inIcm: v as IcmStatus } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    <div className="flex items-center justify-end gap-3">
-                      <input
-                        className="h-4 w-4 accent-[var(--accent)]"
-                        checked={highlightedRowIds.has(item.id)}
-                        onChange={() => toggleHighlight(item.id)}
-                        title="Highlight row"
-                        type="checkbox"
-                      />
+                    <div className="flex items-center justify-end">
                       <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button>
                     </div>
                   </td>
@@ -294,9 +300,9 @@ function LabeledDateInput({ label, value, onChange }: { label: string; value: st
 function DateEdit({ value, onSave }: { value: string | null; onSave: (value: string | null) => void }) {
   const [editing, setEditing] = useState(false);
   if (editing) {
-    return <input className="focus-ring h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm whitespace-nowrap hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
+    return <input className="date-edit-control focus-ring h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm whitespace-nowrap hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
   }
-  return <button className="focus-ring min-h-8 w-full rounded-md px-2 text-left text-sm whitespace-nowrap text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
+  return <button className="date-edit-control focus-ring min-h-8 w-full rounded-md px-2 text-left text-sm whitespace-nowrap text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
 }
 
 function Select<T extends string>({ value, values, labels, onChange }: { value: T; values: T[]; labels: Record<T, string>; onChange: (value: T) => void }) {

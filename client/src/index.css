@@ -123,6 +123,17 @@ select {
   color: var(--text-main) !important;
 }
 
+.data-row:hover .date-edit-control,
+.selected-row .date-edit-control {
+  color: var(--text-main) !important;
+  background-color: color-mix(in srgb, var(--surface) 82%, transparent) !important;
+}
+
+:root[data-theme="dark"] .data-row:hover .date-edit-control {
+  color: var(--text-main) !important;
+  background-color: color-mix(in srgb, var(--surface) 86%, #ffffff 6%) !important;
+}
+
 .selected-row input,
 .selected-row select {
   background-color: color-mix(in srgb, var(--surface) 78%, transparent) !important;
