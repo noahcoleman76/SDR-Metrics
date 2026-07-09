@@ -169,7 +169,11 @@ export default function OpportunitiesPage() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <PeriodToggle value={period} onChange={setPeriod} />
-            <UploadButton onFile={(file) => void upload(file)} />
+            <UploadButton
+              columns={["Account name", "Opportunity number", "Link", "Created date", "Approved date", "Account Executive", "Status", "In ICM"]}
+              description="Upload opportunities from a CSV or Excel file. Column headers should match the opportunity fields."
+              onFile={(file) => void upload(file)}
+            />
             <Button variant="primary" icon={<Plus size={16} />} onClick={() => setModalOpen(true)}>Add opportunity</Button>
           </div>
         }

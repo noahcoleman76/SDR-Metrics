@@ -158,7 +158,11 @@ export default function Stage0Page() {
         description="Early-stage opportunities before manual promotion."
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <UploadButton onFile={(file) => void upload(file)} />
+            <UploadButton
+              columns={["Account name", "Opportunity number", "Link", "Created date", "Account Executive", "Next step"]}
+              description="Upload Stage 0 opportunities from a CSV or Excel file. Column headers should match the Stage 0 fields."
+              onFile={(file) => void upload(file)}
+            />
             <Button variant="primary" icon={<Plus size={16} />} onClick={() => setModalOpen(true)}>Add opportunity</Button>
           </div>
         }
