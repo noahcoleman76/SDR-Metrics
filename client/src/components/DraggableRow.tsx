@@ -1,11 +1,10 @@
 import { useDraggable } from "@dnd-kit/core";
 import { useDroppable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function DraggableRow({ id, children }: { id: string; children: ReactNode }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
   const { setNodeRef: setDropNodeRef, isOver } = useDroppable({ id });
   const setRefs = (node: HTMLDivElement | null) => {
     setNodeRef(node);
@@ -14,11 +13,7 @@ export function DraggableRow({ id, children }: { id: string; children: ReactNode
   return (
     <div
       ref={setRefs}
-      style={{
-        transform: CSS.Translate.toString(transform),
-        zIndex: isDragging ? 50 : undefined
-      }}
-      className={`relative rounded-lg border bg-white p-2 shadow-sm ${isDragging ? "opacity-95 shadow-xl ring-2 ring-sky-200" : ""} ${isOver ? "border-sky-300 ring-2 ring-sky-100" : "border-slate-200"}`}
+      className={`relative rounded-lg border bg-white p-2 shadow-sm ${isDragging ? "opacity-40" : ""} ${isOver ? "border-sky-300 ring-2 ring-sky-100" : "border-slate-200"}`}
     >
       <div className="flex items-center gap-2">
         <button className="cursor-grab text-slate-300 hover:text-slate-500" {...listeners} {...attributes} type="button">
@@ -26,6 +21,15 @@ export function DraggableRow({ id, children }: { id: string; children: ReactNode
         </button>
         <div className="min-w-0 flex-1">{children}</div>
       </div>
+    </div>
+  );
+}
+
+export function DragPreview({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="pointer-events-none w-72 rounded-lg border border-slate-200 bg-white p-3 text-sm shadow-xl ring-2 ring-sky-200">
+      <div className="truncate font-medium text-slate-900">{title}</div>
+      {subtitle ? <div className="mt-1 truncate text-xs text-slate-500">{subtitle}</div> : null}
     </div>
   );
 }

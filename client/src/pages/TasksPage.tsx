@@ -1,9 +1,9 @@
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, DragOverlay, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { ChevronDown, ChevronRight, ExternalLink, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { DraggableRow } from "../components/DraggableRow";
+import { DragPreview, DraggableRow } from "../components/DraggableRow";
 import { DroppableColumn } from "../components/DroppableColumn";
 import { InlineField } from "../components/InlineField";
 import { PageHeader } from "../components/PageHeader";
@@ -21,8 +21,10 @@ export default function TasksPage() {
   const [newCategory, setNewCategory] = useState<TaskCategory>("DAILY");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const activeTasks = useMemo(() => tasks.filter((task) => !task.completedAt), [tasks]);
   const completed = useMemo(() => tasks.filter((task) => task.completedAt), [tasks]);
+  const activeDragTask = useMemo(() => activeTasks.find((task) => task.id === activeDragId), [activeDragId, activeTasks]);
 
   async function createTask() {
     if (!newTask.trim()) return;
@@ -41,7 +43,12 @@ export default function TasksPage() {
     setItems((current) => (result.deleted ? current.filter((task) => task.id !== id) : current.map((task) => (task.id === id ? result.task : task))));
   }
 
+  function onDragStart(event: DragStartEvent) {
+    setActiveDragId(String(event.active.id));
+  }
+
   async function onDragEnd(event: DragEndEvent) {
+    setActiveDragId(null);
     const task = tasks.find((item) => item.id === event.active.id);
     const overId = event.over?.id as string | undefined;
     if (!task || !overId || task.id === overId) return;
@@ -85,7 +92,7 @@ export default function TasksPage() {
       </div>
       {loading ? <p className="text-sm text-slate-500">Loading tasks...</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-      <DndContext onDragEnd={onDragEnd}>
+      <DndContext onDragStart={onDragStart} onDragCancel={() => setActiveDragId(null)} onDragEnd={onDragEnd}>
         <div className="grid gap-4 lg:grid-cols-3">
           {categories.map((category) => (
             <DroppableColumn key={category} id={category} title={taskCategoryLabels[category]}>
@@ -131,6 +138,9 @@ export default function TasksPage() {
             </DroppableColumn>
           ))}
         </div>
+        <DragOverlay zIndex={1000}>
+          {activeDragTask ? <DragPreview title={activeDragTask.name} subtitle={taskCategoryLabels[activeDragTask.category]} /> : null}
+        </DragOverlay>
       </DndContext>
       {completed.length ? (
         <section className="mt-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

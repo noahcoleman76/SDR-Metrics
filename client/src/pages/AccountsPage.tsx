@@ -1,9 +1,9 @@
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, DragOverlay, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { ChevronDown, ChevronRight, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { DraggableRow } from "../components/DraggableRow";
+import { DragPreview, DraggableRow } from "../components/DraggableRow";
 import { DroppableColumn } from "../components/DroppableColumn";
 import { InlineField } from "../components/InlineField";
 import { PageHeader } from "../components/PageHeader";
@@ -22,6 +22,8 @@ export default function AccountsPage() {
   const [section, setSection] = useState<AccountSection>("LEAD_MILLING");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const activeDragAccount = accounts.find((account) => account.id === activeDragId);
 
   async function add() {
     if (!name.trim()) return;
@@ -36,7 +38,12 @@ export default function AccountsPage() {
     setItems((current) => current.map((account) => (account.id === id ? data.account : account)));
   }
 
+  function onDragStart(event: DragStartEvent) {
+    setActiveDragId(String(event.active.id));
+  }
+
   async function onDragEnd(event: DragEndEvent) {
+    setActiveDragId(null);
     const account = accounts.find((item) => item.id === event.active.id);
     const overId = event.over?.id as string | undefined;
     if (!account || !overId || account.id === overId) return;
@@ -79,7 +86,7 @@ export default function AccountsPage() {
       </div>
       {loading ? <p className="text-sm text-slate-500">Loading accounts...</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-      <DndContext onDragEnd={onDragEnd}>
+      <DndContext onDragStart={onDragStart} onDragCancel={() => setActiveDragId(null)} onDragEnd={onDragEnd}>
         <div className="grid gap-4 lg:grid-cols-2">
           {sections.map((item) => (
             <DroppableColumn key={item} id={item} title={accountSectionLabels[item]}>
@@ -121,6 +128,9 @@ export default function AccountsPage() {
             </DroppableColumn>
           ))}
         </div>
+        <DragOverlay zIndex={1000}>
+          {activeDragAccount ? <DragPreview title={activeDragAccount.name} subtitle={accountSectionLabels[activeDragAccount.section]} /> : null}
+        </DragOverlay>
       </DndContext>
       <ConfirmDialog open={Boolean(deleteId)} title="Delete account" description="This permanently deletes the account." onCancel={() => setDeleteId(null)} onConfirm={() => void remove()} />
     </>
