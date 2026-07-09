@@ -166,7 +166,7 @@ export default function Stage0Page() {
       {message ? <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</p> : null}
       {loading ? <p className="text-sm text-slate-500">Loading Stage 0 records...</p> : null}
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-      <div ref={tableRef} className="max-h-[calc(100vh-20rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div ref={tableRef} className="max-h-[calc(100vh-15rem)] overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-[1570px] w-full table-fixed text-left text-sm">
           <colgroup>
             <col className="w-[240px]" />
