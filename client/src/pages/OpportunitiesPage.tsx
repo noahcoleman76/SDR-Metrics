@@ -33,17 +33,9 @@ export default function OpportunitiesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
   const tableRef = useRef<HTMLDivElement | null>(null);
   const uniqueItems = useMemo(() => sortOpportunitiesByCreatedDate(uniqueOpportunities(items)), [items]);
-
-  useEffect(() => {
-    function clearSelection(event: MouseEvent) {
-      if (!tableRef.current?.contains(event.target as Node)) setSelectedRowId(null);
-    }
-    document.addEventListener("mousedown", clearSelection);
-    return () => document.removeEventListener("mousedown", clearSelection);
-  }, []);
 
   useEffect(() => {
     if (!message) return;
@@ -75,6 +67,15 @@ export default function OpportunitiesPage() {
 
   function setColumnFilter(key: OpportunityFilterKey, values: string[]) {
     setFilters((current) => ({ ...current, [key]: values }));
+  }
+
+  function toggleHighlight(id: string) {
+    setHighlightedRowIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   const metrics = useMemo(() => {
@@ -194,7 +195,7 @@ export default function OpportunitiesPage() {
               <col className="w-[220px]" />
               <col className="w-[180px]" />
               <col className="w-[140px]" />
-              <col className="w-[64px]" />
+              <col className="w-[96px]" />
             </colgroup>
             <thead className="sticky top-0 z-10 bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
@@ -213,9 +214,7 @@ export default function OpportunitiesPage() {
               {filtered.map((item) => (
                 <tr
                   key={item.id}
-                  className={`align-top transition ${selectedRowId === item.id ? "selected-row" : "hover:bg-slate-50"}`}
-                  onClick={() => setSelectedRowId(item.id)}
-                  onFocusCapture={() => setSelectedRowId(item.id)}
+                  className={`data-row align-top transition ${highlightedRowIds.has(item.id) ? "selected-row" : "hover:bg-slate-50"}`}
                 >
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountName} required onSave={(v) => update(item.id, { accountName: v } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.opportunityNumber ?? ""} onSave={(v) => update(item.id, { opportunityNumber: v || null } as Partial<Opportunity>)} /></td>
@@ -230,7 +229,18 @@ export default function OpportunitiesPage() {
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><Select value={item.status} values={statuses} labels={opportunityStatusLabels} onChange={(v) => update(item.id, { status: v as OpportunityStatus } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><Select value={item.inIcm} values={icmStatuses} labels={icmLabels} onChange={(v) => update(item.id, { inIcm: v as IcmStatus } as Partial<Opportunity>)} /></td>
-                  <td className="whitespace-nowrap px-3 py-3"><button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button></td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    <div className="flex items-center justify-end gap-3">
+                      <input
+                        className="h-4 w-4 accent-[var(--accent)]"
+                        checked={highlightedRowIds.has(item.id)}
+                        onChange={() => toggleHighlight(item.id)}
+                        title="Highlight row"
+                        type="checkbox"
+                      />
+                      <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

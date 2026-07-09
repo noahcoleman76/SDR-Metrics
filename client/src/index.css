@@ -117,6 +117,12 @@ select {
   color: var(--text-main) !important;
 }
 
+.data-row:hover input,
+.data-row:hover select,
+.data-row:hover button {
+  color: var(--text-main) !important;
+}
+
 .selected-row input,
 .selected-row select {
   background-color: color-mix(in srgb, var(--surface) 78%, transparent) !important;
