@@ -7,12 +7,12 @@ export function toDateInput(value?: string | null) {
 }
 
 export function formatDisplayDate(value?: string | null) {
-  return value ? format(parseISO(value), "MMM do, yyyy") : "";
+  return value ? format(parseISO(toDateInput(value)), "MMM do, yyyy") : "";
 }
 
 export function inCurrentPeriod(dateValue: string | null, period: Period) {
   if (!dateValue) return false;
-  const date = parseISO(dateValue);
+  const date = parseISO(toDateInput(dateValue));
   const now = new Date();
   const interval =
     period === "month"
