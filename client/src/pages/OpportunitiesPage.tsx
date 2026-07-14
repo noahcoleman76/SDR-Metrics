@@ -56,7 +56,7 @@ export default function OpportunitiesPage() {
       })
         && inDateRange(item.createdDate, createdDateRange)
         && inDateRange(item.approvedDate, approvedDateRange)
-        && (period === "all" || inCurrentPeriod(item.approvedDate, period));
+        && (period === "all" || !item.approvedDate || inCurrentPeriod(item.approvedDate, period));
     });
   }, [approvedDateRange, createdDateRange, filters, period, uniqueItems]);
 
