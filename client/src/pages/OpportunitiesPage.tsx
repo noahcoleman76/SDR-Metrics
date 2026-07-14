@@ -1,4 +1,4 @@
-import { ExternalLink, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, Palette, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
@@ -34,6 +34,7 @@ export default function OpportunitiesPage() {
   const [createdDateRange, setCreatedDateRange] = useState<DateRange>(emptyDateRange);
   const [approvedDateRange, setApprovedDateRange] = useState<DateRange>(emptyDateRange);
   const [period, setPeriod] = useState<OpportunityViewPeriod>("year");
+  const [colorCoding, setColorCoding] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -175,6 +176,14 @@ export default function OpportunitiesPage() {
         description="Approved-date based payout tracking."
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              className={colorCoding ? "border-sky-300 bg-sky-50 text-sky-700" : undefined}
+              icon={<Palette size={16} />}
+              onClick={() => setColorCoding((current) => !current)}
+              aria-pressed={colorCoding}
+            >
+              Color coding {colorCoding ? "on" : "off"}
+            </Button>
             <PeriodToggle value={period} onChange={setPeriod} />
             <UploadButton
               columns={["Account name", "Opportunity number", "Link", "Created date", "Approved date", "Account Executive", "Status", "In ICM"]}
@@ -225,7 +234,7 @@ export default function OpportunitiesPage() {
               {filtered.map((item) => (
                 <tr
                   key={item.id}
-                  className={`data-row align-top transition ${highlightedRowIds.has(item.id) ? "selected-row" : "hover:bg-slate-50"}`}
+                  className={`data-row align-top transition ${highlightedRowIds.has(item.id) ? "selected-row" : colorCoding ? statusColorClass(item.status) : "hover:bg-slate-50"}`}
                 >
                   <td className="whitespace-nowrap px-2 py-2">
                     <div className="flex items-center gap-2">
@@ -252,7 +261,7 @@ export default function OpportunitiesPage() {
                   <td className="whitespace-nowrap px-2 py-2"><DateEdit value={item.approvedDate} onSave={(v) => update(item.id, { approvedDate: v } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><Select value={item.status} values={statuses} labels={opportunityStatusLabels} onChange={(v) => update(item.id, { status: v as OpportunityStatus } as Partial<Opportunity>)} /></td>
-                  <td className="whitespace-nowrap px-2 py-2"><Select value={item.inIcm} values={icmStatuses} labels={icmLabels} onChange={(v) => update(item.id, { inIcm: v as IcmStatus } as Partial<Opportunity>)} /></td>
+                  <td className={`whitespace-nowrap px-2 py-2 transition ${colorCoding ? icmColorClass(item.inIcm) : ""}`}><Select value={item.inIcm} values={icmStatuses} labels={icmLabels} onChange={(v) => update(item.id, { inIcm: v as IcmStatus } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-3 py-3">
                     <div className="flex items-center justify-end">
                       <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button>
@@ -336,6 +345,18 @@ function inDateRange(value: string | null, range: DateRange) {
   const date = toDateInput(value);
   if (!date) return false;
   return (!range.from || date >= range.from) && (!range.to || date <= range.to);
+}
+
+function statusColorClass(status: OpportunityStatus) {
+  if (status === "CLEAN") return "status-row-clean";
+  if (status === "DUPLICATE") return "status-row-duplicate";
+  return "status-row-pipeline";
+}
+
+function icmColorClass(status: IcmStatus) {
+  if (status === "YES") return "icm-cell-yes";
+  if (status === "NO") return "icm-cell-no";
+  return "icm-cell-pending";
 }
 
 function textFilterValue(value?: string | null) {

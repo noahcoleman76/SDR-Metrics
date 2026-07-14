@@ -139,6 +139,57 @@ select {
   background-color: color-mix(in srgb, var(--surface) 78%, transparent) !important;
 }
 
+.status-row-clean {
+  background-color: color-mix(in srgb, #dcfce7 78%, var(--surface) 22%);
+}
+
+.status-row-pipeline {
+  background-color: color-mix(in srgb, #dbeafe 78%, var(--surface) 22%);
+}
+
+.status-row-duplicate,
+.icm-cell-pending {
+  background-color: color-mix(in srgb, #fef3c7 82%, var(--surface) 18%);
+}
+
+.icm-cell-no {
+  background-color: color-mix(in srgb, #fee2e2 82%, var(--surface) 18%);
+}
+
+.icm-cell-yes {
+  background-color: color-mix(in srgb, #dcfce7 82%, var(--surface) 18%);
+}
+
+.status-row-clean input,
+.status-row-clean select,
+.status-row-pipeline input,
+.status-row-pipeline select,
+.status-row-duplicate input,
+.status-row-duplicate select,
+.icm-cell-pending select,
+.icm-cell-no select,
+.icm-cell-yes select {
+  background-color: transparent !important;
+}
+
+:root[data-theme="dark"] .status-row-clean,
+:root[data-theme="dark"] .icm-cell-yes {
+  background-color: color-mix(in srgb, #166534 36%, var(--surface) 64%);
+}
+
+:root[data-theme="dark"] .status-row-pipeline {
+  background-color: color-mix(in srgb, #1d4ed8 30%, var(--surface) 70%);
+}
+
+:root[data-theme="dark"] .status-row-duplicate,
+:root[data-theme="dark"] .icm-cell-pending {
+  background-color: color-mix(in srgb, #a16207 34%, var(--surface) 66%);
+}
+
+:root[data-theme="dark"] .icm-cell-no {
+  background-color: color-mix(in srgb, #b91c1c 32%, var(--surface) 68%);
+}
+
 .bg-slate-50,
 .bg-slate-100 {
   background-color: var(--surface-soft) !important;
