@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { DateRangeFilter, type DateRange } from "../components/DateRangeFilter";
 import { InlineField } from "../components/InlineField";
 import { Modal } from "../components/Modal";
 import { PageHeader } from "../components/PageHeader";
@@ -21,14 +22,17 @@ const blankValue = "__blank__";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", approvedDate: "", accountExecutive: "", status: "STAGE_1_PENDING" as OpportunityStatus, inIcm: "PENDING" as IcmStatus };
 type OpportunityViewPeriod = "all" | Period;
-type OpportunityFilterKey = "accountName" | "opportunityNumber" | "link" | "createdDate" | "approvedDate" | "accountExecutive" | "status" | "inIcm";
+type OpportunityFilterKey = "accountName" | "opportunityNumber" | "link" | "accountExecutive" | "status" | "inIcm";
 type OpportunityFilters = Record<OpportunityFilterKey, string[]>;
-const emptyFilters: OpportunityFilters = { accountName: [], opportunityNumber: [], link: [], createdDate: [], approvedDate: [], accountExecutive: [], status: [], inIcm: [] };
+const emptyFilters: OpportunityFilters = { accountName: [], opportunityNumber: [], link: [], accountExecutive: [], status: [], inIcm: [] };
+const emptyDateRange: DateRange = { from: "", to: "" };
 
 export default function OpportunitiesPage() {
   const { items, setItems, loading, error } = useCollection<Opportunity>("/opportunities", "opportunities");
   const [form, setForm] = useState(emptyForm);
   const [filters, setFilters] = useState<OpportunityFilters>(emptyFilters);
+  const [createdDateRange, setCreatedDateRange] = useState<DateRange>(emptyDateRange);
+  const [approvedDateRange, setApprovedDateRange] = useState<DateRange>(emptyDateRange);
   const [period, setPeriod] = useState<OpportunityViewPeriod>("year");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -48,17 +52,18 @@ export default function OpportunitiesPage() {
       return (Object.keys(filters) as OpportunityFilterKey[]).every((key) => {
         const selected = filters[key];
         return selected.length === 0 || selected.includes(opportunityFilterValue(item, key));
-      }) && (period === "all" || !item.approvedDate || inCurrentPeriod(item.approvedDate, period));
+      })
+        && inDateRange(item.createdDate, createdDateRange)
+        && inDateRange(item.approvedDate, approvedDateRange)
+        && (period === "all" || inCurrentPeriod(item.approvedDate, period));
     });
-  }, [filters, period, uniqueItems]);
+  }, [approvedDateRange, createdDateRange, filters, period, uniqueItems]);
 
   const filterOptions = useMemo(() => {
     return {
       accountName: optionsFrom(uniqueItems, (item) => textFilterValue(item.accountName)),
       opportunityNumber: optionsFrom(uniqueItems, (item) => textFilterValue(item.opportunityNumber)),
       link: optionsFrom(uniqueItems, (item) => textFilterValue(item.link)),
-      createdDate: optionsFrom(uniqueItems, (item) => dateFilterValue(item.createdDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
-      approvedDate: optionsFrom(uniqueItems, (item) => dateFilterValue(item.approvedDate), (value) => (value === blankValue ? "Blank" : formatDisplayDate(value))),
       accountExecutive: optionsFrom(uniqueItems, (item) => textFilterValue(item.accountExecutive)),
       status: optionsFrom(uniqueItems, (item) => item.status, (value) => opportunityStatusLabels[value as OpportunityStatus]),
       inIcm: optionsFrom(uniqueItems, (item) => item.inIcm, (value) => icmLabels[value as IcmStatus])
@@ -143,6 +148,8 @@ export default function OpportunitiesPage() {
       }
       setItems((current) => [...created, ...current]);
       setFilters(emptyFilters);
+      setCreatedDateRange(emptyDateRange);
+      setApprovedDateRange(emptyDateRange);
       setMessage(`Uploaded ${created.length} opportunities${rows.length - created.length > 0 ? `, skipped ${rows.length - created.length} duplicate or blank rows` : ""}`);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Could not upload opportunities");
@@ -206,8 +213,8 @@ export default function OpportunitiesPage() {
                 <th className="px-3 py-3 font-medium"><ColumnFilter label="Account" options={filterOptions.accountName} selected={filters.accountName} onChange={(values) => setColumnFilter("accountName", values)} /></th>
                 <th className="px-3 py-3 font-medium"><ColumnFilter label="Opp #" options={filterOptions.opportunityNumber} selected={filters.opportunityNumber} onChange={(values) => setColumnFilter("opportunityNumber", values)} /></th>
                 <th className="px-3 py-3 font-medium"><ColumnFilter label="Link" options={filterOptions.link} selected={filters.link} onChange={(values) => setColumnFilter("link", values)} /></th>
-                <th className="px-3 py-3 font-medium"><ColumnFilter label="Created" options={filterOptions.createdDate} selected={filters.createdDate} onChange={(values) => setColumnFilter("createdDate", values)} /></th>
-                <th className="px-3 py-3 font-medium"><ColumnFilter label="Approved" options={filterOptions.approvedDate} selected={filters.approvedDate} onChange={(values) => setColumnFilter("approvedDate", values)} /></th>
+                <th className="px-3 py-3 font-medium"><DateRangeFilter label="Created" value={createdDateRange} onChange={setCreatedDateRange} /></th>
+                <th className="px-3 py-3 font-medium"><DateRangeFilter label="Approved" value={approvedDateRange} onChange={setApprovedDateRange} /></th>
                 <th className="px-3 py-3 font-medium"><ColumnFilter label="AE" options={filterOptions.accountExecutive} selected={filters.accountExecutive} onChange={(values) => setColumnFilter("accountExecutive", values)} /></th>
                 <th className="px-3 py-3 font-medium"><ColumnFilter label="Status" options={filterOptions.status} selected={filters.status} onChange={(values) => setColumnFilter("status", values)} /></th>
                 <th className="px-3 py-3 font-medium"><ColumnFilter label="ICM" options={filterOptions.inIcm} selected={filters.inIcm} onChange={(values) => setColumnFilter("inIcm", values)} /></th>
@@ -319,20 +326,21 @@ function PeriodToggle({ value, onChange }: { value: OpportunityViewPeriod; onCha
 }
 
 function opportunityFilterValue(item: Opportunity, key: OpportunityFilterKey) {
-  if (key === "createdDate") return dateFilterValue(item.createdDate);
-  if (key === "approvedDate") return dateFilterValue(item.approvedDate);
   if (key === "status") return item.status;
   if (key === "inIcm") return item.inIcm;
   return textFilterValue(item[key]);
 }
 
+function inDateRange(value: string | null, range: DateRange) {
+  if (!range.from && !range.to) return true;
+  const date = toDateInput(value);
+  if (!date) return false;
+  return (!range.from || date >= range.from) && (!range.to || date <= range.to);
+}
+
 function textFilterValue(value?: string | null) {
   const trimmed = value?.trim();
   return trimmed || blankValue;
-}
-
-function dateFilterValue(value?: string | null) {
-  return toDateInput(value) || blankValue;
 }
 
 function optionsFrom<T>(items: T[], getValue: (item: T) => string, getLabel: (value: string) => string = (value) => (value === blankValue ? "Blank" : value)) {
