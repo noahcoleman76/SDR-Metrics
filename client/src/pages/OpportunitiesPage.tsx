@@ -37,7 +37,7 @@ export default function OpportunitiesPage() {
   const [createdDateRange, setCreatedDateRange] = useState<DateRange>(emptyDateRange);
   const [approvedDateRange, setApprovedDateRange] = useState<DateRange>(emptyDateRange);
   const [period, setPeriod] = useState<OpportunityViewPeriod>("year");
-  const [colorCoding, setColorCoding] = useState(false);
+  const [colorCoding, setColorCoding] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -279,8 +279,8 @@ export default function OpportunitiesPage() {
       <Modal open={modalOpen} title="Add opportunity" onClose={() => setModalOpen(false)}>
         <div className="grid gap-3 md:grid-cols-2">
           <Input placeholder="Account name" value={form.accountName} onChange={(v) => setForm({ ...form, accountName: v })} />
-          <Input placeholder="Opportunity number" value={form.opportunityNumber} onChange={(v) => setForm({ ...form, opportunityNumber: v })} />
           <Input placeholder="Link" value={form.link} onChange={(v) => setForm({ ...form, link: v })} />
+          <Input placeholder="Opportunity number" value={form.opportunityNumber} onChange={(v) => setForm({ ...form, opportunityNumber: v })} />
           <LabeledDateInput label="Created date" value={form.createdDate} onChange={(v) => setForm({ ...form, createdDate: v })} />
           <LabeledDateInput label="Approved date" value={form.approvedDate} onChange={(v) => setForm({ ...form, approvedDate: v })} />
           <Input placeholder="Account Executive" value={form.accountExecutive} onChange={(v) => setForm({ ...form, accountExecutive: v })} />

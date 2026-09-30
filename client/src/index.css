@@ -122,6 +122,63 @@ select {
   background-color: color-mix(in srgb, var(--accent-soft) 58%, var(--surface) 42%);
 }
 
+.aar-entry-cell {
+  background-color: #e9f4ff;
+}
+
+:root[data-theme="dark"] .aar-entry-cell {
+  background-color: color-mix(in srgb, #1d4f75 42%, var(--surface) 58%);
+}
+
+.aar-entry-cell .aar-input {
+  color: var(--text-main);
+  background-color: transparent !important;
+}
+
+.aar-entry-cell .aar-input:hover,
+.aar-entry-cell .aar-input:focus {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border-soft) 35%);
+  background-color: color-mix(in srgb, var(--surface) 72%, transparent) !important;
+}
+
+.aar-goal-cell .aar-input {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.aar-section-heading {
+  color: var(--accent);
+}
+
+.aar-report-head {
+  color: color-mix(in srgb, var(--accent) 85%, var(--text-main) 15%);
+  background-color: color-mix(in srgb, var(--accent) 13%, var(--surface) 87%);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border-soft) 74%);
+}
+
+.aar-export-offscreen {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  width: 1200px;
+  pointer-events: none;
+}
+
+.aar-export-sheet {
+  width: 1200px;
+  padding: 28px;
+  color: #172033;
+  background: #ffffff;
+}
+
+.aar-export-sheet .aar-entry-cell {
+  background-color: #e9f4ff !important;
+}
+
+.aar-export-table {
+  border: 1px solid #e2e8f0;
+}
+
 .theme-shell {
   background:
     radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 24rem),

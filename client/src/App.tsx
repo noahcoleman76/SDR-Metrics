@@ -8,7 +8,7 @@ const TasksPage = lazy(() => import("./pages/TasksPage"));
 const AccountsPage = lazy(() => import("./pages/AccountsPage"));
 const OpportunitiesPage = lazy(() => import("./pages/OpportunitiesPage"));
 const Stage0Page = lazy(() => import("./pages/Stage0Page"));
-const ArrActualsPage = lazy(() => import("./pages/ArrActualsPage"));
+const AarActualsPage = lazy(() => import("./pages/AarActualsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 function Protected() {
@@ -28,7 +28,8 @@ export default function App() {
           <Route path="/accounts" element={<AccountsPage />} />
           <Route path="/opportunities" element={<OpportunitiesPage />} />
           <Route path="/stage-0" element={<Stage0Page />} />
-          <Route path="/arr-actuals" element={<ArrActualsPage />} />
+          <Route path="/aar-actuals" element={<AarActualsPage />} />
+          <Route path="/arr-actuals" element={<Navigate to="/aar-actuals" replace />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/tasks" replace />} />

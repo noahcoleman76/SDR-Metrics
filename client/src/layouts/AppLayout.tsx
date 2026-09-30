@@ -7,10 +7,10 @@ import logoUrl from "../assets/sdr-logo.png";
 
 const nav = [
   { to: "/tasks", label: "Tasks", icon: CheckSquare },
-  { to: "/accounts", label: "Accounts", icon: BriefcaseBusiness },
   { to: "/opportunities", label: "Opportunities", icon: CircleDollarSign },
   { to: "/stage-0", label: "Stage 0", icon: Flag },
-  { to: "/arr-actuals", label: "ARR Actuals", icon: BarChart3 },
+  { to: "/accounts", label: "Accounts", icon: BriefcaseBusiness },
+  { to: "/aar-actuals", label: "AAR Actuals", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Settings }
 ];
 

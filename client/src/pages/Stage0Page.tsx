@@ -249,8 +249,8 @@ export default function Stage0Page() {
       <Modal open={modalOpen} title="Add Stage 0 opportunity" onClose={() => setModalOpen(false)}>
         <div className="grid gap-3 md:grid-cols-2">
           <Input placeholder="Account name" value={form.accountName} onChange={(v) => setForm({ ...form, accountName: v })} />
-          <Input placeholder="Opportunity number" value={form.opportunityNumber} onChange={(v) => setForm({ ...form, opportunityNumber: v })} />
           <Input placeholder="Link" value={form.link} onChange={(v) => setForm({ ...form, link: v })} />
+          <Input placeholder="Opportunity number" value={form.opportunityNumber} onChange={(v) => setForm({ ...form, opportunityNumber: v })} />
           <Input type="date" value={form.createdDate} onChange={(v) => setForm({ ...form, createdDate: v })} />
           <Input placeholder="Account Executive" value={form.accountExecutive} onChange={(v) => setForm({ ...form, accountExecutive: v })} />
           <Input placeholder="Next step" value={form.nextStep} onChange={(v) => setForm({ ...form, nextStep: v })} />
