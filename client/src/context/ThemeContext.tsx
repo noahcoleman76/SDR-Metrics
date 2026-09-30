@@ -38,7 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(modeKey, mode);
     document.documentElement.dataset.theme = mode;
     const logoUrl = mode === "dark" ? "/sdr-logo-dark.png" : "/sdr-logo-light.png";
-    document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"], link[rel="apple-touch-icon"]').forEach((link) => {
+    document.querySelectorAll<HTMLLinkElement>('link[rel="apple-touch-icon"]').forEach((link) => {
       link.href = logoUrl;
     });
   }, [mode]);

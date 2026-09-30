@@ -6,9 +6,11 @@
   --surface: #ffffff;
   --surface-soft: #f8fafc;
   --app-bg: #f7f8fb;
-  --texture-blend: multiply;
-  --background-tint-start: 9%;
-  --background-tint-end: 5%;
+  --panel-image: url("/honeycomb-panels-light.svg");
+  --panel-opacity: 0.8;
+  --neon-opacity: 0.4;
+  --honeycomb-width: 94.5px;
+  --honeycomb-height: 54.558px;
   --text-main: #172033;
   --text-muted: #64748b;
   --border-soft: #e2e8f0;
@@ -21,9 +23,9 @@
   --surface: #101722;
   --surface-soft: #172033;
   --app-bg: #070b12;
-  --texture-blend: screen;
-  --background-tint-start: 14%;
-  --background-tint-end: 9%;
+  --panel-image: url("/honeycomb-panels.svg");
+  --panel-opacity: 1;
+  --neon-opacity: 0.95;
   --text-main: #e5e7eb;
   --text-muted: #94a3b8;
   --border-soft: #263244;
@@ -41,6 +43,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  isolation: isolate;
 }
 
 *::-webkit-scrollbar {
@@ -192,18 +195,38 @@ select {
   border: 1px solid #e2e8f0;
 }
 
-body,
-.theme-shell {
+body {
   background-color: var(--app-bg);
-  background:
-    url("/honeycomb.svg"),
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) var(--background-tint-start), var(--app-bg)),
-      color-mix(in srgb, var(--accent) var(--background-tint-end), var(--app-bg))
-    );
-  background-size: 48px 83.138px, 100% 100%;
-  background-blend-mode: var(--texture-blend), normal;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+body::before {
+  z-index: -2;
+  opacity: var(--panel-opacity);
+  background: var(--panel-image) 0 0 / var(--honeycomb-width) var(--honeycomb-height) repeat;
+}
+
+body::after {
+  z-index: -1;
+  opacity: var(--neon-opacity);
+  background: linear-gradient(
+    125deg,
+    var(--accent) 0%,
+    color-mix(in srgb, var(--accent) 65%, #ffffff) 38%,
+    var(--accent) 65%,
+    color-mix(in srgb, var(--accent) 75%, #ff9a32) 100%
+  );
+  mask-image: url("/honeycomb-neon.svg"), linear-gradient(180deg, rgb(0 0 0 / .12), #000 35%, #000 55%, rgb(0 0 0 / .12));
+  mask-size: calc(var(--honeycomb-width) * 4) calc(var(--honeycomb-height) * 4), 100% 100%;
+  mask-repeat: repeat, no-repeat;
+  mask-composite: intersect;
 }
 
 .accent-divider {
