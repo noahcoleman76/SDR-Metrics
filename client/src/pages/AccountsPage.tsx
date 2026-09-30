@@ -2,6 +2,7 @@ import { DndContext, DragOverlay, type DragEndEvent, type DragStartEvent } from 
 import { ChevronDown, ChevronRight, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/Button";
+import { AppSelect } from "../components/AppSelect";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DragPreview, DraggableRow } from "../components/DraggableRow";
 import { DroppableColumn } from "../components/DroppableColumn";
@@ -14,6 +15,7 @@ import { externalHref } from "../utils/links";
 import { accountSectionLabels } from "../utils/labels";
 
 const sections: AccountSection[] = ["LEAD_MILLING", "PRIORITY_ACCOUNTS"];
+const sectionOptions = sections.map((item) => ({ value: item, label: accountSectionLabels[item] }));
 
 export default function AccountsPage() {
   const { items: accounts, setItems, loading, error } = useCollection<Account>("/accounts", "accounts");
@@ -79,9 +81,7 @@ export default function AccountsPage() {
       <div className="mb-5 grid gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm lg:grid-cols-[1fr_1fr_220px_auto]">
         <input className="focus-ring h-10 rounded-lg border border-slate-200 px-3 text-sm" value={name} onChange={(event) => setName(event.target.value)} placeholder="Account name" />
         <input className="focus-ring h-10 rounded-lg border border-slate-200 px-3 text-sm" value={link} onChange={(event) => setLink(event.target.value)} placeholder="Optional link" />
-        <select className="focus-ring h-10 rounded-lg border border-slate-200 px-3 text-sm" value={section} onChange={(event) => setSection(event.target.value as AccountSection)}>
-          {sections.map((item) => <option key={item} value={item}>{accountSectionLabels[item]}</option>)}
-        </select>
+        <AppSelect label="Account section" value={section} options={sectionOptions} onChange={setSection} />
         <Button variant="primary" icon={<Plus size={16} />} onClick={add}>Add</Button>
       </div>
       {loading ? <p className="text-sm text-slate-500">Loading accounts...</p> : null}

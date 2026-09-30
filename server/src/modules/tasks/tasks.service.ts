@@ -34,11 +34,7 @@ export async function update(userId: string, id: string, data: Partial<{ name: s
 }
 
 export async function complete(userId: string, id: string) {
-  const task = await assertOwns(userId, id);
-  if (task.category === "AD_HOC") {
-    await prisma.task.delete({ where: { id } });
-    return { deleted: true, task };
-  }
+  await assertOwns(userId, id);
   return { deleted: false, task: await prisma.task.update({ where: { id }, data: { completedAt: new Date() } }) };
 }
 

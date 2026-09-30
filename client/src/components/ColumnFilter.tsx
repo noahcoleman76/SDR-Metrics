@@ -48,7 +48,7 @@ export function ColumnFilter({ label, options, selected, onChange }: Props) {
         ? createPortal(
             <>
               <button className="fixed inset-0 z-40 cursor-default" aria-label="Close filter" type="button" onClick={() => setOpen(false)} />
-              <div className="fixed z-50 w-56 rounded-lg border border-slate-200 bg-white p-2 text-slate-700 shadow-xl" style={{ top: position.top, left: position.left }}>
+              <div className="app-menu fixed z-[60] w-56 rounded-lg border p-2 shadow-xl" style={{ top: position.top, left: position.left }}>
                 <div className="mb-2 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
                   <span className="text-xs font-semibold text-slate-500">{label}</span>
                   <button className="text-xs font-medium text-sky-700 hover:text-sky-900" onClick={() => onChange([])} type="button">
@@ -58,8 +58,8 @@ export function ColumnFilter({ label, options, selected, onChange }: Props) {
                 <div className="max-h-56 space-y-1 overflow-y-auto">
                   {options.length ? (
                     options.map((option) => (
-                      <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs normal-case hover:bg-slate-50">
-                        <input className="h-3.5 w-3.5" type="checkbox" checked={selectedSet.has(option.value)} onChange={() => toggle(option.value)} />
+                      <label key={option.value} className="app-menu-option flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs normal-case">
+                        <input className="h-3.5 w-3.5 accent-[var(--accent)]" type="checkbox" checked={selectedSet.has(option.value)} onChange={() => toggle(option.value)} />
                         <span className="truncate">{option.label}</span>
                       </label>
                     ))

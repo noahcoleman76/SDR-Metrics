@@ -42,7 +42,7 @@ export function DateRangeFilter({ label, value, onChange }: Props) {
         ? createPortal(
             <>
               <button className="fixed inset-0 z-40 cursor-default" aria-label="Close filter" type="button" onClick={() => setOpen(false)} />
-              <div className="fixed z-50 w-64 rounded-lg border border-slate-200 bg-white p-3 text-slate-700 shadow-xl" style={{ top: position.top, left: position.left }}>
+              <div className="app-menu fixed z-[60] w-64 rounded-lg border p-3 shadow-xl" style={{ top: position.top, left: position.left }}>
                 <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
                   <span className="text-xs font-semibold text-slate-500">{label} range</span>
                   <button className="text-xs font-medium text-sky-700 hover:text-sky-900" onClick={() => onChange({ from: "", to: "" })} type="button">

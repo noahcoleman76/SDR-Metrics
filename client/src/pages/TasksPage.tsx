@@ -2,6 +2,7 @@ import { DndContext, DragOverlay, type DragEndEvent, type DragStartEvent } from 
 import { ChevronDown, ChevronRight, ExternalLink, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../components/Button";
+import { AppSelect } from "../components/AppSelect";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DragPreview, DraggableRow } from "../components/DraggableRow";
 import { DroppableColumn } from "../components/DroppableColumn";
@@ -14,6 +15,7 @@ import { taskCategoryLabels } from "../utils/labels";
 import { useCollection } from "../hooks/useCollection";
 
 const categories: TaskCategory[] = ["DAILY", "WEEKLY", "AD_HOC"];
+const categoryOptions = categories.map((category) => ({ value: category, label: taskCategoryLabels[category] }));
 
 export default function TasksPage() {
   const { items: tasks, setItems, loading, error } = useCollection<Task>("/tasks", "tasks");
@@ -85,9 +87,7 @@ export default function TasksPage() {
       <PageHeader title="Tasks" description="Recurring and ad hoc SDR work." />
       <div className="mb-5 flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row">
         <input className="focus-ring h-10 flex-1 rounded-lg border border-slate-200 px-3 text-sm" value={newTask} onChange={(event) => setNewTask(event.target.value)} placeholder="Add task" />
-        <select className="focus-ring h-10 rounded-lg border border-slate-200 px-3 text-sm" value={newCategory} onChange={(event) => setNewCategory(event.target.value as TaskCategory)}>
-          {categories.map((category) => <option key={category} value={category}>{taskCategoryLabels[category]}</option>)}
-        </select>
+        <AppSelect className="sm:w-56" label="Task category" value={newCategory} options={categoryOptions} onChange={setNewCategory} />
         <Button variant="primary" icon={<Plus size={16} />} onClick={createTask}>Add</Button>
       </div>
       {loading ? <p className="text-sm text-slate-500">Loading tasks...</p> : null}
@@ -148,8 +148,14 @@ export default function TasksPage() {
           <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
             {completed.map((task) => (
               <div key={task.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">
-                <span>{task.name}</span>
-                <Button variant="ghost" icon={<RotateCcw size={15} />} onClick={() => void updateTask(task.id, { completedAt: null } as Partial<Task>)}>Undo</Button>
+                <div className="min-w-0">
+                  <span className="block truncate text-slate-700">{task.name}</span>
+                  <span className="text-xs text-slate-400">{taskCategoryLabels[task.category]}</span>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" icon={<RotateCcw size={15} />} onClick={() => void updateTask(task.id, { completedAt: null } as Partial<Task>)}>Undo</Button>
+                  <button className="focus-ring rounded-md p-2 text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(task.id)} title="Delete completed task" type="button"><Trash2 size={16} /></button>
+                </div>
               </div>
             ))}
           </div>

@@ -1,6 +1,7 @@
 import { ExternalLink, Palette, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../components/Button";
+import { AppSelect } from "../components/AppSelect";
 import { ColumnFilter, type FilterOption } from "../components/ColumnFilter";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DateRangeFilter, type DateRange } from "../components/DateRangeFilter";
@@ -18,6 +19,8 @@ import { externalHref } from "../utils/links";
 
 const statuses: OpportunityStatus[] = ["STAGE_0", "STAGE_1_PENDING", "CLEAN", "DUPLICATE"];
 const icmStatuses: IcmStatus[] = ["PENDING", "YES", "NO"];
+const statusOptions = statuses.map((value) => ({ value, label: opportunityStatusLabels[value] }));
+const icmOptions = icmStatuses.map((value) => ({ value, label: icmLabels[value] }));
 const blankValue = "__blank__";
 
 const emptyForm = { accountName: "", opportunityNumber: "", link: "", createdDate: "", approvedDate: "", accountExecutive: "", status: "STAGE_1_PENDING" as OpportunityStatus, inIcm: "PENDING" as IcmStatus };
@@ -260,8 +263,8 @@ export default function OpportunitiesPage() {
                   <td className="whitespace-nowrap px-2 py-2"><DateEdit value={item.createdDate} onSave={(v) => update(item.id, { createdDate: v } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><DateEdit value={item.approvedDate} onSave={(v) => update(item.id, { approvedDate: v } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-2 py-2"><InlineField value={item.accountExecutive ?? ""} onSave={(v) => update(item.id, { accountExecutive: v || null } as Partial<Opportunity>)} /></td>
-                  <td className="whitespace-nowrap px-2 py-2"><Select value={item.status} values={statuses} labels={opportunityStatusLabels} onChange={(v) => update(item.id, { status: v as OpportunityStatus } as Partial<Opportunity>)} /></td>
-                  <td className={`whitespace-nowrap px-2 py-2 transition ${colorCoding ? icmColorClass(item.inIcm) : ""}`}><Select value={item.inIcm} values={icmStatuses} labels={icmLabels} onChange={(v) => update(item.id, { inIcm: v as IcmStatus } as Partial<Opportunity>)} /></td>
+                  <td className="whitespace-nowrap px-2 py-2"><AppSelect compact label="Status" value={item.status} options={statusOptions} onChange={(v) => void update(item.id, { status: v } as Partial<Opportunity>)} /></td>
+                  <td className={`whitespace-nowrap px-2 py-2 transition ${colorCoding ? icmColorClass(item.inIcm) : ""}`}><AppSelect compact label="In ICM" value={item.inIcm} options={icmOptions} onChange={(v) => void update(item.id, { inIcm: v } as Partial<Opportunity>)} /></td>
                   <td className="whitespace-nowrap px-3 py-3">
                     <div className="flex items-center justify-end">
                       <button className="text-slate-400 hover:text-rose-600" onClick={() => setDeleteId(item.id)} title="Delete"><Trash2 size={16} /></button>
@@ -281,14 +284,14 @@ export default function OpportunitiesPage() {
           <LabeledDateInput label="Created date" value={form.createdDate} onChange={(v) => setForm({ ...form, createdDate: v })} />
           <LabeledDateInput label="Approved date" value={form.approvedDate} onChange={(v) => setForm({ ...form, approvedDate: v })} />
           <Input placeholder="Account Executive" value={form.accountExecutive} onChange={(v) => setForm({ ...form, accountExecutive: v })} />
-          <label className="block text-xs font-medium text-slate-500">
+          <div className="text-xs font-medium text-slate-500">
             Status
-            <select className="focus-ring mt-1 h-10 w-full rounded-lg border border-slate-200 px-2 text-sm" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as OpportunityStatus })}>{statuses.map((s) => <option key={s} value={s}>{opportunityStatusLabels[s]}</option>)}</select>
-          </label>
-          <label className="block text-xs font-medium text-slate-500">
+            <AppSelect className="mt-1" label="Status" value={form.status} options={statusOptions} onChange={(status) => setForm((current) => ({ ...current, status }))} />
+          </div>
+          <div className="text-xs font-medium text-slate-500">
             In ICM
-            <select className="focus-ring mt-1 h-10 w-full rounded-lg border border-slate-200 px-2 text-sm" value={form.inIcm} onChange={(event) => setForm({ ...form, inIcm: event.target.value as IcmStatus })}>{icmStatuses.map((s) => <option key={s} value={s}>{icmLabels[s]}</option>)}</select>
-          </label>
+            <AppSelect className="mt-1" label="In ICM" value={form.inIcm} options={icmOptions} onChange={(inIcm) => setForm((current) => ({ ...current, inIcm }))} />
+          </div>
         </div>
         <div className="mt-5 flex justify-end gap-2">
           <Button onClick={() => setModalOpen(false)}>Cancel</Button>
@@ -323,10 +326,6 @@ function DateEdit({ value, onSave }: { value: string | null; onSave: (value: str
     return <input className="date-edit-control focus-ring h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm whitespace-nowrap hover:bg-slate-50" type="date" value={toDateInput(value)} onChange={(event) => onSave(event.target.value || null)} onBlur={() => setEditing(false)} autoFocus />;
   }
   return <button className="date-edit-control focus-ring min-h-8 w-full rounded-md px-2 text-left text-sm whitespace-nowrap text-slate-700 hover:bg-slate-50" type="button" onClick={() => setEditing(true)}>{formatDisplayDate(value) || "Set date"}</button>;
-}
-
-function Select<T extends string>({ value, values, labels, onChange }: { value: T; values: T[]; labels: Record<T, string>; onChange: (value: T) => void }) {
-  return <select className="focus-ring h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-sm whitespace-nowrap hover:bg-slate-50" value={value} onChange={(event) => onChange(event.target.value as T)}>{values.map((v) => <option key={v} value={v}>{labels[v]}</option>)}</select>;
 }
 
 function PeriodToggle({ value, onChange }: { value: OpportunityViewPeriod; onChange: (period: OpportunityViewPeriod) => void }) {

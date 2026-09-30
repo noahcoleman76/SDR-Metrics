@@ -89,6 +89,39 @@ select {
     linear-gradient(145deg, color-mix(in srgb, var(--accent-soft) 85%, #ffffff 15%), var(--surface));
 }
 
+.sidebar-label {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.sidebar:is(:hover, :focus-within) .sidebar-label {
+  opacity: 1;
+  transition-delay: 80ms;
+}
+
+.app-select-trigger,
+.app-menu {
+  color: var(--text-main);
+  background-color: var(--surface);
+  border-color: var(--border-soft);
+}
+
+.app-select-trigger:hover,
+.app-menu-option:hover,
+.app-menu-option:focus-visible {
+  background-color: var(--surface-soft);
+}
+
+.app-select-trigger.app-select-compact {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.app-menu-option[aria-selected="true"] {
+  color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent-soft) 58%, var(--surface) 42%);
+}
+
 .theme-shell {
   background:
     radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 24rem),
