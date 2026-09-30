@@ -150,7 +150,6 @@ export default function TasksPage() {
               <div key={task.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">
                 <div className="min-w-0">
                   <span className="block truncate text-slate-700">{task.name}</span>
-                  <span className="text-xs text-slate-400">{taskCategoryLabels[task.category]}</span>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <Button variant="ghost" icon={<RotateCcw size={15} />} onClick={() => void updateTask(task.id, { completedAt: null } as Partial<Task>)}>Undo</Button>

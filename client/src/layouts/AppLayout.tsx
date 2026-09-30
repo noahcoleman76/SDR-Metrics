@@ -19,7 +19,7 @@ export function AppLayout() {
   const { mode, toggleMode } = useTheme();
   return (
     <div className="theme-shell min-h-screen text-slate-900">
-      <aside className="sidebar fixed inset-y-0 left-0 z-30 hidden w-28 flex-col overflow-hidden border-r border-slate-200 bg-white/95 px-4 py-4 shadow-sm transition-[width] duration-200 hover:w-60 focus-within:w-60 md:flex">
+      <aside className="sidebar fixed inset-y-0 left-0 z-30 hidden w-28 flex-col overflow-hidden border-r border-slate-200 bg-white/95 px-4 py-4 shadow-sm transition-[width] duration-200 md:flex">
         <button className="logo-backdrop focus-ring mb-6 flex h-20 shrink-0 items-center rounded-xl border border-slate-200 shadow-sm" onClick={toggleMode} type="button" title={`Switch to ${mode === "light" ? "dark" : "light"} mode`}>
           <span className="flex w-[78px] shrink-0 items-center justify-center"><BrandLogo className="h-16 w-16 object-contain" /></span>
           <span className="sidebar-label whitespace-nowrap text-sm font-semibold text-slate-900">My Metrics</span>
