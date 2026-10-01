@@ -3,6 +3,7 @@
 :root {
   --accent: #0284c7;
   --accent-soft: #e0f2fe;
+  --accent-glow: #0284c7;
   --accent-contrast: #ffffff;
   --surface: #ffffff;
   --surface-soft: #eef3f8;
@@ -241,10 +242,10 @@ body::after {
   opacity: var(--neon-opacity);
   background: linear-gradient(
     125deg,
-    var(--accent) 0%,
-    color-mix(in srgb, var(--accent) 65%, #ffffff) 38%,
-    var(--accent) 65%,
-    color-mix(in srgb, var(--accent) 75%, #ff9a32) 100%
+    var(--accent-glow) 0%,
+    color-mix(in srgb, var(--accent-glow) 65%, #ffffff) 38%,
+    var(--accent-glow) 65%,
+    color-mix(in srgb, var(--accent-glow) 75%, #ff9a32) 100%
   );
   mask-image: url("/honeycomb-neon.svg"), linear-gradient(180deg, rgb(0 0 0 / .12), #000 35%, #000 55%, rgb(0 0 0 / .12));
   mask-size: calc(var(--honeycomb-width) * 4) calc(var(--honeycomb-height) * 4), 100% 100%;
@@ -268,14 +269,14 @@ body::after {
     repeating-radial-gradient(
       ellipse 86% 30% at -8% 8%,
       transparent 0 105px,
-      color-mix(in srgb, var(--accent) 24%, transparent) 132px,
+      color-mix(in srgb, var(--accent-glow) 24%, transparent) 132px,
       var(--wave-highlight) 145px,
       transparent 182px
     ),
     repeating-radial-gradient(
       ellipse 82% 32% at 108% 72%,
       transparent 0 128px,
-      color-mix(in srgb, var(--accent) 18%, transparent) 154px,
+      color-mix(in srgb, var(--accent-glow) 18%, transparent) 154px,
       transparent 205px
     );
   filter: blur(18px);
