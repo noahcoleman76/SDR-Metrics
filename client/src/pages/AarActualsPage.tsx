@@ -124,32 +124,34 @@ export default function AarActualsPage() {
 
   return (
     <>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold text-slate-950">AAR Actuals</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button icon={<Copy size={15} />} disabled={!editable || copying || pendingSaves > 0} onClick={() => void copyQuarterImage()}>
-            {copying ? "Copying..." : "Copy image"}
-          </Button>
-          <Button icon={<ChevronLeft size={15} />} aria-label="Previous quarter" title="Previous quarter" onClick={() => changeQuarter(-1)} />
-          <div className="min-w-28 text-center">
-            <div className="text-sm font-semibold text-slate-900">Q{quarter} {year}</div>
-            <div className="text-xs text-slate-500">{monthLabel(year, months[0])} - {monthLabel(year, months[2])}</div>
+      <div className="aar-page-panel">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold text-slate-950">AAR Actuals</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button icon={<Copy size={15} />} disabled={!editable || copying || pendingSaves > 0} onClick={() => void copyQuarterImage()}>
+              {copying ? "Copying..." : "Copy image"}
+            </Button>
+            <Button icon={<ChevronLeft size={15} />} aria-label="Previous quarter" title="Previous quarter" onClick={() => changeQuarter(-1)} />
+            <div className="min-w-28 text-center">
+              <div className="text-sm font-semibold text-slate-900">Q{quarter} {year}</div>
+              <div className="text-xs text-slate-500">{monthLabel(year, months[0])} - {monthLabel(year, months[2])}</div>
+            </div>
+            <Button icon={<ChevronRight size={15} />} aria-label="Next quarter" title="Next quarter" onClick={() => changeQuarter(1)} />
+            {year !== current.year || quarter !== current.quarter ? <Button onClick={() => setParams({})}>Current</Button> : null}
           </div>
-          <Button icon={<ChevronRight size={15} />} aria-label="Next quarter" title="Next quarter" onClick={() => changeQuarter(1)} />
-          {year !== current.year || quarter !== current.quarter ? <Button onClick={() => setParams({})}>Current</Button> : null}
         </div>
-      </div>
 
-      {loading ? <p className="mb-2 text-sm text-slate-500">Loading actuals...</p> : null}
-      {loadError ? <p className="mb-2 flex items-center gap-2 text-sm text-rose-600" role="alert"><CircleAlert size={16} />{loadError}</p> : null}
-      {saveError ? <p className="mb-2 flex items-center gap-2 text-sm text-rose-600" role="alert"><CircleAlert size={16} />{saveError}</p> : null}
-      {message ? <p className="mb-2 text-sm text-emerald-700" role="status">{message}</p> : null}
+        {loading ? <p className="mb-2 text-sm text-slate-500">Loading actuals...</p> : null}
+        {loadError ? <p className="mb-2 flex items-center gap-2 text-sm text-rose-600" role="alert"><CircleAlert size={16} />{loadError}</p> : null}
+        {saveError ? <p className="mb-2 flex items-center gap-2 text-sm text-rose-600" role="alert"><CircleAlert size={16} />{saveError}</p> : null}
+        {message ? <p className="mb-2 text-sm text-emerald-700" role="status">{message}</p> : null}
 
-      <Summary goals={goals} editable={editable} year={year} quarter={quarter} onSaveGoal={saveGoal} onError={setSaveError} />
-      <div className="mt-3 grid gap-4 lg:grid-cols-2">
-        {sections.map((section) => (
-          <MetricTable key={section.title} title={section.title} rows={section.rows} year={year} months={months} data={displayData.months} goals={goals} editable={editable} onSaveMonth={saveMonth} onError={setSaveError} />
-        ))}
+        <Summary goals={goals} editable={editable} year={year} quarter={quarter} onSaveGoal={saveGoal} onError={setSaveError} />
+        <div className="mt-3 grid gap-4 lg:grid-cols-2">
+          {sections.map((section) => (
+            <MetricTable key={section.title} title={section.title} rows={section.rows} year={year} months={months} data={displayData.months} goals={goals} editable={editable} onSaveMonth={saveMonth} onError={setSaveError} />
+          ))}
+        </div>
       </div>
 
       <div className="aar-export-offscreen" aria-hidden="true">

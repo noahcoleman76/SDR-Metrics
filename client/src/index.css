@@ -160,6 +160,26 @@ input[type="checkbox"] {
   background-color: #e9f4ff;
 }
 
+.aar-page-panel {
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border-soft) 78%);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--surface) 97%, var(--accent-soft) 3%);
+  box-shadow:
+    0 18px 48px rgb(30 41 59 / 0.18),
+    0 2px 8px rgb(30 41 59 / 0.1),
+    inset 0 1px 0 rgb(255 255 255 / 0.7);
+}
+
+:root[data-theme="dark"] .aar-page-panel {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border-soft) 72%);
+  background: color-mix(in srgb, var(--surface) 97%, #ffffff 3%);
+  box-shadow:
+    0 22px 56px rgb(0 0 0 / 0.52),
+    0 0 0 1px rgb(255 255 255 / 0.035),
+    inset 0 1px 0 rgb(255 255 255 / 0.055);
+}
+
 :root[data-theme="dark"] .aar-entry-cell {
   background-color: color-mix(in srgb, #1d4f75 42%, var(--surface) 58%);
 }
