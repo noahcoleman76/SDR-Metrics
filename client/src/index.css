@@ -3,32 +3,44 @@
 :root {
   --accent: #0284c7;
   --accent-soft: #e0f2fe;
+  --accent-contrast: #ffffff;
   --surface: #ffffff;
-  --surface-soft: #f8fafc;
-  --app-bg: #f7f8fb;
+  --surface-soft: #eef3f8;
+  --app-bg: #edf2f7;
   --panel-image: url("/honeycomb-panels-light.svg");
   --panel-opacity: 0.8;
   --neon-opacity: 0.4;
   --honeycomb-width: 94.5px;
   --honeycomb-height: 54.558px;
+  --background-accent-start: 14%;
+  --background-accent-middle: 5%;
+  --background-accent-end: 10%;
+  --wave-opacity: 0.42;
+  --wave-highlight: rgb(255 255 255 / 0.5);
   --text-main: #172033;
-  --text-muted: #64748b;
-  --border-soft: #e2e8f0;
+  --text-muted: #526277;
+  --border-soft: #c7d2df;
   color: #172033;
   background: #f7f8fb;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 :root[data-theme="dark"] {
-  --surface: #101722;
-  --surface-soft: #172033;
-  --app-bg: #070b12;
+  color-scheme: dark;
+  --surface: #182332;
+  --surface-soft: #223044;
+  --app-bg: #080d14;
   --panel-image: url("/honeycomb-panels.svg");
   --panel-opacity: 1;
   --neon-opacity: 0.95;
-  --text-main: #e5e7eb;
-  --text-muted: #94a3b8;
-  --border-soft: #263244;
+  --background-accent-start: 17%;
+  --background-accent-middle: 5%;
+  --background-accent-end: 10%;
+  --wave-opacity: 0.28;
+  --wave-highlight: rgb(255 255 255 / 0.12);
+  --text-main: #f1f5f9;
+  --text-muted: #aebdd0;
+  --border-soft: #3a4b62;
   color: var(--text-main);
   background: var(--app-bg);
 }
@@ -80,6 +92,10 @@ select {
   font: inherit;
 }
 
+input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
   --tw-ring-color: var(--accent);
@@ -87,6 +103,7 @@ select {
 
 .accent-gradient {
   background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #ffffff 30%));
+  color: var(--accent-contrast) !important;
 }
 
 .logo-backdrop {
@@ -196,7 +213,13 @@ select {
 }
 
 body {
-  background-color: var(--app-bg);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) var(--background-accent-start), var(--app-bg)) 0%,
+      color-mix(in srgb, var(--accent) var(--background-accent-middle), var(--app-bg)) 46%,
+      color-mix(in srgb, var(--accent) var(--background-accent-end), var(--app-bg)) 100%
+    );
 }
 
 body::before,
@@ -227,6 +250,36 @@ body::after {
   mask-size: calc(var(--honeycomb-width) * 4) calc(var(--honeycomb-height) * 4), 100% 100%;
   mask-repeat: repeat, no-repeat;
   mask-composite: intersect;
+}
+
+.theme-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.theme-shell::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: -22vh -18vw;
+  pointer-events: none;
+  opacity: var(--wave-opacity);
+  background:
+    repeating-radial-gradient(
+      ellipse 86% 30% at -8% 8%,
+      transparent 0 105px,
+      color-mix(in srgb, var(--accent) 24%, transparent) 132px,
+      var(--wave-highlight) 145px,
+      transparent 182px
+    ),
+    repeating-radial-gradient(
+      ellipse 82% 32% at 108% 72%,
+      transparent 0 128px,
+      color-mix(in srgb, var(--accent) 18%, transparent) 154px,
+      transparent 205px
+    );
+  filter: blur(18px);
+  transform: rotate(-4deg) scale(1.08);
 }
 
 .accent-divider {
@@ -308,20 +361,24 @@ body::after {
 
 :root[data-theme="dark"] .status-row-clean,
 :root[data-theme="dark"] .icm-cell-yes {
-  background-color: color-mix(in srgb, #166534 36%, var(--surface) 64%);
+  background-color: color-mix(in srgb, #10b981 23%, var(--surface) 77%);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, #34d399 78%, var(--accent) 22%);
 }
 
 :root[data-theme="dark"] .status-row-pipeline {
-  background-color: color-mix(in srgb, #1d4ed8 30%, var(--surface) 70%);
+  background-color: color-mix(in srgb, #2563eb 22%, var(--surface) 78%);
+  box-shadow: inset 3px 0 0 color-mix(in srgb, #60a5fa 75%, var(--accent) 25%);
 }
 
 :root[data-theme="dark"] .status-row-duplicate,
 :root[data-theme="dark"] .icm-cell-pending {
-  background-color: color-mix(in srgb, #a16207 34%, var(--surface) 66%);
+  background-color: color-mix(in srgb, #d97706 22%, var(--surface) 78%);
+  box-shadow: inset 3px 0 0 #fbbf24;
 }
 
 :root[data-theme="dark"] .icm-cell-no {
-  background-color: color-mix(in srgb, #b91c1c 32%, var(--surface) 68%);
+  background-color: color-mix(in srgb, #dc2626 22%, var(--surface) 78%);
+  box-shadow: inset 3px 0 0 #f87171;
 }
 
 .bg-slate-50,
@@ -331,7 +388,12 @@ body::after {
 
 .bg-white,
 .bg-white\/95 {
-  background-color: color-mix(in srgb, var(--surface) 95%, transparent) !important;
+  background-color: color-mix(in srgb, var(--surface) 98%, transparent) !important;
+}
+
+:root[data-theme="dark"] .bg-white,
+:root[data-theme="dark"] .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--surface) 96%, #ffffff 4%) !important;
 }
 
 .border-slate-200,
@@ -355,6 +417,7 @@ body::after {
 .bg-sky-600,
 .hover\:bg-sky-700:hover {
   background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 78%, #111827 22%)) !important;
+  color: var(--accent-contrast) !important;
 }
 
 .text-sky-700,
@@ -366,14 +429,56 @@ body::after {
   background-color: var(--accent-soft) !important;
 }
 
-:root[data-theme="dark"] input,
-:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] input:not([type="checkbox"]):not(.bg-transparent):not(.aar-input),
+:root[data-theme="dark"] textarea:not(.bg-transparent),
 :root[data-theme="dark"] select {
   color: var(--text-main);
-  background-color: color-mix(in srgb, var(--surface) 92%, transparent);
+  background-color: color-mix(in srgb, var(--surface-soft) 82%, var(--surface) 18%);
+  border-color: var(--border-soft);
+}
+
+:root[data-theme="dark"] input.bg-transparent,
+:root[data-theme="dark"] textarea.bg-transparent,
+:root[data-theme="dark"] .aar-input {
+  background-color: transparent !important;
+  border-color: transparent;
+}
+
+:root[data-theme="dark"] input[type="checkbox"] {
+  color-scheme: dark;
+  background-color: #0c1521;
+  border-color: #60728a;
+}
+
+:root[data-theme="dark"] .data-row:not(.selected-row):not(.status-row-clean):not(.status-row-pipeline):not(.status-row-duplicate):hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%) !important;
+}
+
+:root[data-theme="dark"] .status-row-clean:hover {
+  background-color: color-mix(in srgb, #10b981 29%, var(--surface) 71%);
+}
+
+:root[data-theme="dark"] .status-row-pipeline:hover {
+  background-color: color-mix(in srgb, #2563eb 28%, var(--surface) 72%);
+}
+
+:root[data-theme="dark"] .status-row-duplicate:hover {
+  background-color: color-mix(in srgb, #d97706 28%, var(--surface) 72%);
+}
+
+:root[data-theme="dark"] thead.bg-slate-50 {
+  background-color: color-mix(in srgb, var(--surface-soft) 88%, var(--accent) 12%) !important;
 }
 
 :root[data-theme="dark"] .shadow-sm,
 :root[data-theme="dark"] .shadow-xl {
-  box-shadow: 0 16px 40px rgb(0 0 0 / 0.28);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.32), 0 0 0 1px rgb(255 255 255 / 0.025);
+}
+
+:root:not([data-theme="dark"]) .shadow-sm {
+  box-shadow: 0 8px 24px rgb(30 41 59 / 0.1), 0 1px 3px rgb(30 41 59 / 0.08);
+}
+
+:root:not([data-theme="dark"]) .shadow-xl {
+  box-shadow: 0 20px 50px rgb(30 41 59 / 0.16), 0 4px 12px rgb(30 41 59 / 0.1);
 }
