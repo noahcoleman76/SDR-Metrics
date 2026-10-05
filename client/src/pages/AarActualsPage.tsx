@@ -183,7 +183,7 @@ function Summary({ goals, editable, year, quarter, onSaveGoal, onError, exportMo
   exportMode?: boolean;
 }) {
   return (
-    <div className={`grid border-y border-slate-200 bg-white ${exportMode ? "grid-cols-4" : "grid-cols-2 lg:grid-cols-4"}`}>
+    <div className={`grid ${exportMode ? "grid-cols-4 border-y border-slate-200 bg-white" : "aar-goals-panel grid-cols-2 lg:grid-cols-4"}`}>
       {summaryMetrics.map((item) => (
           <div key={item.key} className="min-w-0 border-r border-slate-200 px-3 py-2.5 last:border-r-0">
             <div className="text-xs font-semibold text-slate-700">{item.label}</div>
@@ -218,7 +218,7 @@ function MetricTable({ title, rows, year, months, data, goals, editable, onSaveM
   return (
     <section className="min-w-0">
       <h2 className="aar-section-heading mb-1.5 text-xs font-semibold uppercase">{title}</h2>
-      <div className={exportMode ? "" : "overflow-x-auto rounded-md border border-slate-200 bg-white"}>
+      <div className={exportMode ? "" : "aar-table-shell overflow-x-auto rounded-md"}>
         <table className={`w-full table-fixed border-collapse text-xs ${exportMode ? "aar-export-table" : "min-w-[440px]"}`}>
           <colgroup><col className="w-[42%]" /><col className="w-[14.5%]" /><col className="w-[14.5%]" /><col className="w-[14.5%]" /><col className="w-[14.5%]" /></colgroup>
           <thead className="aar-report-head">

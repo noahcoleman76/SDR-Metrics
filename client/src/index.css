@@ -160,6 +160,24 @@ input[type="checkbox"] {
   background-color: #e9f4ff;
 }
 
+.aar-goals-panel {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border-soft) 66%);
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--accent-soft) 24%, var(--surface) 76%);
+  box-shadow:
+    0 8px 22px rgb(30 41 59 / 0.12),
+    inset 0 3px 0 color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.aar-table-shell {
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border-soft) 70%);
+  background-color: var(--surface);
+  box-shadow:
+    0 10px 26px rgb(30 41 59 / 0.14),
+    0 2px 5px rgb(30 41 59 / 0.08);
+}
+
 .aar-page-panel {
   padding: 1rem;
   border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border-soft) 78%);
@@ -178,6 +196,22 @@ input[type="checkbox"] {
     0 22px 56px rgb(0 0 0 / 0.52),
     0 0 0 1px rgb(255 255 255 / 0.035),
     inset 0 1px 0 rgb(255 255 255 / 0.055);
+}
+
+:root[data-theme="dark"] .aar-goals-panel {
+  border-color: color-mix(in srgb, var(--accent-glow) 42%, var(--border-soft) 58%);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
+  box-shadow:
+    0 12px 30px rgb(0 0 0 / 0.34),
+    inset 0 3px 0 color-mix(in srgb, var(--accent-glow) 72%, transparent);
+}
+
+:root[data-theme="dark"] .aar-table-shell {
+  border-color: color-mix(in srgb, var(--accent-glow) 34%, var(--border-soft) 66%);
+  background-color: color-mix(in srgb, var(--surface) 96%, #ffffff 4%);
+  box-shadow:
+    0 14px 34px rgb(0 0 0 / 0.4),
+    0 0 0 1px rgb(255 255 255 / 0.025);
 }
 
 :root[data-theme="dark"] .aar-entry-cell {
@@ -205,9 +239,17 @@ input[type="checkbox"] {
 }
 
 .aar-report-head {
-  color: color-mix(in srgb, var(--accent) 85%, var(--text-main) 15%);
-  background-color: color-mix(in srgb, var(--accent) 13%, var(--surface) 87%);
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border-soft) 74%);
+  color: color-mix(in srgb, var(--accent) 72%, var(--text-main) 28%);
+  background-color: color-mix(in srgb, var(--accent-soft) 62%, var(--surface) 38%);
+  border-bottom: 2px solid color-mix(in srgb, var(--accent) 44%, var(--border-soft) 56%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.58);
+}
+
+:root[data-theme="dark"] .aar-report-head {
+  color: color-mix(in srgb, var(--accent-glow) 64%, var(--text-main) 36%);
+  background-color: color-mix(in srgb, var(--accent) 22%, var(--surface-soft) 78%);
+  border-bottom-color: color-mix(in srgb, var(--accent-glow) 48%, var(--border-soft) 52%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
 .aar-export-offscreen {
